@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+
+# Python cache / test cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Virtual environment
+.venv/
+venv/
+
+# Local secrets / local config
+.env
+config.json
+
+# Runtime outputs
+data/
+logs/
+public/
+
+# Tooling
+.coverage
+htmlcov/

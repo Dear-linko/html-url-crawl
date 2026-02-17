@@ -2,7 +2,7 @@ PYTHON ?= /opt/homebrew/bin/python3.11
 VENV_DIR ?= .venv
 VENV_PYTHON := $(VENV_DIR)/bin/python
 
-.PHONY: venv install init check check-update test clean
+.PHONY: venv install init check check-update report notify run-and-notify test clean
 
 venv:
 	$(PYTHON) -m venv $(VENV_DIR)
@@ -19,8 +19,17 @@ check:
 check-update:
 	$(VENV_PYTHON) main.py check --update-baseline
 
+report:
+	$(VENV_PYTHON) scripts/render_report.py
+
+notify:
+	$(VENV_PYTHON) scripts/notify_telegram.py
+
+run-and-notify:
+	bash scripts/run_and_notify.sh
+
 test:
 	$(VENV_PYTHON) -m pytest -q
 
 clean:
-	rm -rf $(VENV_DIR) .pytest_cache
+	rm -rf $(VENV_DIR) .pytest_cache public

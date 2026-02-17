@@ -1,58 +1,18 @@
 # html-url-crawl
 
-按页面抓取 `<a href>` URL，**仅保留外链**（与页面域名不同），支持基线对比并把“新增 URL”按运行日期追加写入 JSON。
+抓取配置页面中的 `<a href>`，仅保留外链（域名与页面不同），支持增量检测，并可生成静态报表 + Telegram 通知。
 
-## 推荐方式（Makefile + 虚拟环境）
-
-安装依赖
+## 快速开始
 
 ```bash
 make install
-```
-
-初始化基线：
-
-```bash
 make init
-```
-
-检测新增外链 URL（写入当日文件）：
-
-```bash
 make check
-```
-
-检测并更新基线：
-
-```bash
-make check-update
-```
-
-运行测试：
-
-```bash
-make test
-```
-
-清理虚拟环境和缓存：
-
-```bash
-make clean
-```
-
-## 手动方式（不使用 Makefile）
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python main.py init
-python main.py check
 ```
 
 ## 配置
 
-编辑 `config.json`，格式如下：
+主配置文件：`config.json`
 
 ```json
 {
@@ -63,11 +23,56 @@ python main.py check
 }
 ```
 
-你也可以复制 `config.example.json` 作为模板。
+模板：`config.example.json`
+
+通知配置文件：`.env`（可由 `.env.example` 复制）
+
+```bash
+cp .env.example .env
+```
+
+`.env` 字段：
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
+- `REPORT_BASE_URL`（例如 `https://example.com/report`）
+
+## 常用命令
+
+```bash
+make install          # 创建 .venv 并安装依赖
+make init             # 初始化 baseline
+make check            # 增量检测并写入 data/daily/YYYY-MM-DD.json
+make check-update     # 检测后更新 baseline
+make report           # 生成静态报表到 public/
+make notify           # 检查最新 run 并按需发送 Telegram
+make run-and-notify   # check -> report -> notify（用于定时任务）
+make test             # 运行测试
+```
 
 ## 输出文件
 
 - 基线：`data/baseline.json`
-- 每日新增：`data/daily/YYYY-MM-DD.json`
+- 每日增量：`data/daily/YYYY-MM-DD.json`
+- 报表总览：`public/index.html`
+- 报表详情：`public/daily/YYYY-MM-DD.html`
 
-同一天执行多次 `check` 会在同一文件的 `runs` 数组追加记录。
+说明：同一天多次 `check` 会追加到同一 JSON 的 `runs` 数组。
+
+## 定时运行（cron）
+
+示例：每小时第 5 分钟执行一次
+
+```cron
+5 * * * * cd /Users/liike/Desktop/dev/python/html-url-crawl && /bin/bash scripts/run_and_notify.sh
+```
+
+## Nginx 静态托管示例
+
+将 `public/` 作为静态目录，例如：
+
+```nginx
+location /report/ {
+    alias /Users/liike/Desktop/dev/python/html-url-crawl/public/;
+    index index.html;
+}
+```

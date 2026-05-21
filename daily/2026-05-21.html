@@ -1,0 +1,781 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <title>Daily Report 2026-05-21</title>
+  <style>
+:root {
+  --tw-bg: #f8fafc;
+  --tw-surface: #ffffff;
+  --tw-surface-soft: #f8fafc;
+  --tw-text: #0f172a;
+  --tw-muted: #64748b;
+  --tw-line: #e2e8f0;
+  --tw-line-strong: #cbd5e1;
+  --tw-brand: #0f172a;
+  --tw-ok-bg: #f0fdf4;
+  --tw-ok-text: #166534;
+  --tw-ok-line: #bbf7d0;
+  --tw-err-bg: #fef2f2;
+  --tw-err-text: #991b1b;
+  --tw-err-line: #fecaca;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--tw-bg);
+  color: var(--tw-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+  line-height: 1.6;
+}
+a {
+  color: var(--tw-brand);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+a:hover { border-bottom-color: var(--tw-line-strong); }
+
+.container {
+  width: min(1040px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0 2.5rem;
+}
+
+.stack { display: grid; gap: 1rem; }
+
+.card {
+  background: var(--tw-surface);
+  border: 1px solid var(--tw-line);
+  border-radius: 0.75rem;
+}
+
+.card-pad { padding: 1rem 1.1rem; }
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose p { margin: 0; }
+.prose h1 {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+.prose h2 {
+  font-size: 1.12rem;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  font-weight: 650;
+}
+.prose h3 {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: #334155;
+  font-weight: 600;
+}
+.prose .prose-muted {
+  margin-top: 0.4rem;
+  color: var(--tw-muted);
+  font-size: 0.9rem;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.metric {
+  background: var(--tw-surface);
+  border: 1px solid var(--tw-line);
+  border-radius: 0.7rem;
+  padding: 0.8rem 0.9rem;
+}
+.metric-label {
+  margin: 0;
+  color: var(--tw-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.metric-value {
+  margin: 0.35rem 0 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--tw-line);
+  border-radius: 0.65rem;
+}
+.mobile-list { display: none; }
+.mobile-item + .mobile-item { margin-top: 0.65rem; }
+.mobile-item {
+  border: 1px solid var(--tw-line);
+  border-radius: 0.65rem;
+  padding: 0.72rem;
+  background: var(--tw-surface-soft);
+}
+.mobile-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+.mobile-date {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.mobile-time {
+  margin: 0.3rem 0 0;
+  color: var(--tw-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+.mobile-metrics {
+  margin-top: 0.6rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+.mobile-metric {
+  border: 1px solid var(--tw-line);
+  border-radius: 0.55rem;
+  background: #fff;
+  padding: 0.42rem 0.5rem;
+}
+.mobile-metric-label {
+  margin: 0;
+  color: var(--tw-muted);
+  font-size: 0.7rem;
+  line-height: 1.3;
+}
+.mobile-metric-value {
+  margin: 0.18rem 0 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+th, td {
+  border-bottom: 1px solid var(--tw-line);
+  padding: 0.78rem 0.84rem;
+  text-align: left;
+  vertical-align: top;
+}
+tr:last-child td { border-bottom: 0; }
+th {
+  background: var(--tw-surface-soft);
+  color: var(--tw-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+td { font-size: 0.9rem; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  border: 1px solid var(--tw-line-strong);
+  background: var(--tw-surface-soft);
+  color: #334155;
+  font-size: 0.74rem;
+  font-weight: 650;
+  line-height: 1;
+  padding: 0.22rem 0.56rem;
+}
+.badge-ok {
+  color: var(--tw-ok-text);
+  border-color: var(--tw-ok-line);
+  background: var(--tw-ok-bg);
+}
+.badge-err {
+  color: var(--tw-err-text);
+  border-color: var(--tw-err-line);
+  background: var(--tw-err-bg);
+}
+
+.run {
+  border: 1px solid var(--tw-line);
+  border-radius: 0.65rem;
+  overflow: hidden;
+}
+.run + .run { margin-top: 0.75rem; }
+.run-head {
+  border-bottom: 1px solid var(--tw-line);
+  background: var(--tw-surface-soft);
+  color: var(--tw-muted);
+  font-size: 0.8rem;
+  padding: 0.56rem 0.72rem;
+}
+.page {
+  padding: 0.78rem;
+  border-bottom: 1px solid var(--tw-line);
+}
+.page:last-child { border-bottom: 0; }
+.page-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.42rem;
+}
+.page-source {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #1e293b;
+  word-break: break-all;
+}
+
+.url-list {
+  list-style: none;
+  margin: 0.55rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.42rem;
+}
+.url-item {
+  background: var(--tw-surface-soft);
+  border: 1px solid var(--tw-line);
+  border-radius: 0.55rem;
+  padding: 0.48rem 0.6rem;
+  word-break: break-all;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.error-box {
+  margin-top: 0.55rem;
+  background: var(--tw-err-bg);
+  border: 1px solid var(--tw-err-line);
+  border-radius: 0.55rem;
+  padding: 0.5rem 0.6rem;
+  color: var(--tw-err-text);
+  font-size: 0.8rem;
+  word-break: break-all;
+}
+
+.link-back {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.6rem;
+  color: var(--tw-muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 960px) {
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .container {
+    width: calc(100% - 1rem);
+    padding: 0.95rem 0 1.5rem;
+  }
+  .card-pad { padding: 0.82rem 0.88rem; }
+  .prose h1 { font-size: 1.16rem; }
+  .prose .prose-muted { font-size: 0.82rem; }
+  .metrics { grid-template-columns: 1fr; gap: 0.55rem; }
+  .metric { padding: 0.68rem 0.76rem; }
+  .metric-value { font-size: 1.05rem; }
+  .table-wrap { border-radius: 0.55rem; }
+  th, td { padding: 0.62rem 0.62rem; font-size: 0.82rem; }
+  .table-wrap { display: none; }
+  .mobile-list { display: block; }
+  .run-head { padding: 0.5rem 0.6rem; }
+  .page { padding: 0.66rem; }
+}
+</style>
+</head>
+<body>
+  <main class='container stack'>
+    <header class='card card-pad prose'>
+      <h1>Daily URL Report · 2026-05-21</h1>
+      <p class='prose-muted'>Latest run added: 1105</p>
+      <a class='link-back' href='../index.html'>← Back to index</a>
+    </header>
+
+    <section class='metrics'>
+      <article class='metric'><p class='metric-label'>Runs</p><p class='metric-value'>1</p></article>
+      <article class='metric'><p class='metric-label'>Unique Added (Day)</p><p class='metric-value'>973</p></article>
+      <article class='metric'><p class='metric-label'>Latest Added</p><p class='metric-value'>1105</p></article>
+      <article class='metric'><p class='metric-label'>Date</p><p class='metric-value'>2026-05-21</p></article>
+    </section>
+
+    <section class='card card-pad'>
+      <section class='run'>
+<div class='run-head'>Run 1 · 2026-05-21T10:15:41+08:00</div>
+<article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://pt-media.org/2022/11/02/kuvitteellinen-hakaristi-pahoitti-mielen/</p>
+<ul class='url-list'><li class='url-item'><a href='http://prc/' target='_blank' rel='noreferrer'>http://prc/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 3</span>
+</div>
+<p class='page-source'>https://syncedreview.com/2024/09/09/microsofts-fully-pipelined-distributed-transformer-processes-16x-sequence-length-with-extreme-hardware-efficiency/</p>
+<ul class='url-list'><li class='url-item'><a href='https://hsk1.org/' target='_blank' rel='noreferrer'>https://hsk1.org/</a></li><li class='url-item'><a href='https://hsk1.org/hsk/1/practice-tests' target='_blank' rel='noreferrer'>https://hsk1.org/hsk/1/practice-tests</a></li><li class='url-item'><a href='https://www.flow-music.app/' target='_blank' rel='noreferrer'>https://www.flow-music.app/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 2</span>
+</div>
+<p class='page-source'>https://www.madrimasd.org/blogs/matematicas/2024/02/11/150483</p>
+<ul class='url-list'><li class='url-item'><a href='https://horizon6guide.com/' target='_blank' rel='noreferrer'>https://horizon6guide.com/</a></li><li class='url-item'><a href='https://productcreativegenerator.com/' target='_blank' rel='noreferrer'>https://productcreativegenerator.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 3</span>
+</div>
+<p class='page-source'>https://blogs.deusto.es/innovandis/llegando-al-nivel-pro-con-lxs-20g-en-innovandis/</p>
+<ul class='url-list'><li class='url-item'><a href='https://happyhorsefree.com/' target='_blank' rel='noreferrer'>https://happyhorsefree.com/</a></li><li class='url-item'><a href='https://imageprompts.co/' target='_blank' rel='noreferrer'>https://imageprompts.co/</a></li><li class='url-item'><a href='https://weeklyadfinder.com/foodmaxx/' target='_blank' rel='noreferrer'>https://weeklyadfinder.com/foodmaxx/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 7</span>
+</div>
+<p class='page-source'>https://blogg.ng.se/michael-gill/2016/01/jag-och-dottern-oppnar-star-wars-lador</p>
+<ul class='url-list'><li class='url-item'><a href='https://canyongame.com/' target='_blank' rel='noreferrer'>https://canyongame.com/</a></li><li class='url-item'><a href='https://ng.se/artiklar/frasse-levinsson-plotsligt-alskar-jag-thomas-stenstrom' target='_blank' rel='noreferrer'>https://ng.se/artiklar/frasse-levinsson-plotsligt-alskar-jag-thomas-stenstrom</a></li><li class='url-item'><a href='https://omni-gemini.com/' target='_blank' rel='noreferrer'>https://omni-gemini.com/</a></li><li class='url-item'><a href='https://returnpolicyinfo.com/best-buy-return-policy/' target='_blank' rel='noreferrer'>https://returnpolicyinfo.com/best-buy-return-policy/</a></li><li class='url-item'><a href='https://subnautica2guides.com/' target='_blank' rel='noreferrer'>https://subnautica2guides.com/</a></li><li class='url-item'><a href='https://www.flow-music.app/' target='_blank' rel='noreferrer'>https://www.flow-music.app/</a></li><li class='url-item'><a href='https://www.seedance2ai.app/tools/wan3-0/' target='_blank' rel='noreferrer'>https://www.seedance2ai.app/tools/wan3-0/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 2</span>
+</div>
+<p class='page-source'>https://www.beautythroughimperfection.com/reindeer-donuts/</p>
+<ul class='url-list'><li class='url-item'><a href='https://canyongame.com/' target='_blank' rel='noreferrer'>https://canyongame.com/</a></li><li class='url-item'><a href='https://subnautica2guides.com/' target='_blank' rel='noreferrer'>https://subnautica2guides.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 4</span>
+</div>
+<p class='page-source'>https://holdtoreset.com/where-is-the-shipwreck-today-in-gta-online/</p>
+<ul class='url-list'><li class='url-item'><a href='https://cdn.holdtoreset.com/wp-content/uploads/2021/01/21113954/gta-online-cayo-perico-underwater-treasure-by-big-rock.jpg' target='_blank' rel='noreferrer'>https://cdn.holdtoreset.com/wp-content/uploads/2021/01/21113954/gta-online-cayo-perico-underwater-treasure-by-big-rock.jpg</a></li><li class='url-item'><a href='https://cdn.holdtoreset.com/wp-content/uploads/2023/06/09113256/gta-online-with-a-paddle-white-water-activity-center-tonga-valley-street-dealer-location.jpg' target='_blank' rel='noreferrer'>https://cdn.holdtoreset.com/wp-content/uploads/2023/06/09113256/gta-online-with-a-paddle-white-water-activity-center-tonga-valley-street-dealer-location.jpg</a></li><li class='url-item'><a href='https://cdn.holdtoreset.com/wp-content/uploads/2023/06/21104913/gta-online-hawaiian-snow-hawick-street-dealer.jpg' target='_blank' rel='noreferrer'>https://cdn.holdtoreset.com/wp-content/uploads/2023/06/21104913/gta-online-hawaiian-snow-hawick-street-dealer.jpg</a></li><li class='url-item'><a href='https://cdn.holdtoreset.com/wp-content/uploads/2026/01/22235934/gta-online-palmer-tarylor-power-station-gun-van-map-spawn-location.png' target='_blank' rel='noreferrer'>https://cdn.holdtoreset.com/wp-content/uploads/2026/01/22235934/gta-online-palmer-tarylor-power-station-gun-van-map-spawn-location.png</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 2</span>
+</div>
+<p class='page-source'>https://www.learnalanguage.com/blog/italian-greetings-how-are-you-in-italian/</p>
+<ul class='url-list'><li class='url-item'><a href='https://cartovoxel.com/' target='_blank' rel='noreferrer'>https://cartovoxel.com/</a></li><li class='url-item'><a href='https://happimod.com/' target='_blank' rel='noreferrer'>https://happimod.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 2</span>
+</div>
+<p class='page-source'>https://mummyfever.co.uk/the-best-youtube-home-workouts/</p>
+<ul class='url-list'><li class='url-item'><a href='https://cuteblesing.com/' target='_blank' rel='noreferrer'>https://cuteblesing.com/</a></li><li class='url-item'><a href='https://dance2ai.com/' target='_blank' rel='noreferrer'>https://dance2ai.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 3</span>
+</div>
+<p class='page-source'>https://www.mae.gov.bi/en/vacancy-announcement/</p>
+<ul class='url-list'><li class='url-item'><a href='https://dialedgg.app/' target='_blank' rel='noreferrer'>https://dialedgg.app/</a></li><li class='url-item'><a href='https://dialedgg.app/)' target='_blank' rel='noreferrer'>https://dialedgg.app/)</a></li><li class='url-item'><a href='https://subnautica2guides.com/' target='_blank' rel='noreferrer'>https://subnautica2guides.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 4</span>
+</div>
+<p class='page-source'>https://chayagrossberg.com/diagnosis-versus-you/</p>
+<ul class='url-list'><li class='url-item'><a href='https://dialedgg.app/' target='_blank' rel='noreferrer'>https://dialedgg.app/</a></li><li class='url-item'><a href='https://dialedgg.app/)' target='_blank' rel='noreferrer'>https://dialedgg.app/)</a></li><li class='url-item'><a href='https://happimod.com/' target='_blank' rel='noreferrer'>https://happimod.com/</a></li><li class='url-item'><a href='https://subnautica2guides.com/' target='_blank' rel='noreferrer'>https://subnautica2guides.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://premierchess.com/uncategorized/is-chess-a-sport-an-introduction-of-chess-in-and-within-the-sports-world</p>
+<ul class='url-list'><li class='url-item'><a href='https://subnautica2guides.com/' target='_blank' rel='noreferrer'>https://subnautica2guides.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 7</span>
+</div>
+<p class='page-source'>http://godchild.keenspot.com/comic/chapter-3-page-05/</p>
+<ul class='url-list'><li class='url-item'><a href='https://afb88my.net/' target='_blank' rel='noreferrer'>https://afb88my.net/</a></li><li class='url-item'><a href='https://dialedgg.app/' target='_blank' rel='noreferrer'>https://dialedgg.app/</a></li><li class='url-item'><a href='https://fwctimes.com/news/' target='_blank' rel='noreferrer'>https://fwctimes.com/news/</a></li><li class='url-item'><a href='https://imagelayer.net/' target='_blank' rel='noreferrer'>https://imagelayer.net/</a></li><li class='url-item'><a href='https://omni-gemini.com/' target='_blank' rel='noreferrer'>https://omni-gemini.com/</a></li><li class='url-item'><a href='https://texasroadhouseusmenu.com/' target='_blank' rel='noreferrer'>https://texasroadhouseusmenu.com/</a></li><li class='url-item'><a href='https://www.omni-flash.online/' target='_blank' rel='noreferrer'>https://www.omni-flash.online/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 2</span>
+</div>
+<p class='page-source'>https://blogg.ng.se/paparazzibloggen/2021/03/exklusiv-forhandslyssning-av-david-bowies-dotters-nya-musik</p>
+<ul class='url-list'><li class='url-item'><a href='https://ng.se/artiklar/frasse-levinsson-plotsligt-alskar-jag-thomas-stenstrom' target='_blank' rel='noreferrer'>https://ng.se/artiklar/frasse-levinsson-plotsligt-alskar-jag-thomas-stenstrom</a></li><li class='url-item'><a href='https://subnautica2guides.com/' target='_blank' rel='noreferrer'>https://subnautica2guides.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://premierchess.com/chess-growth/maythebestplayerwin</p>
+<ul class='url-list'><li class='url-item'><a href='https://subnautica2guides.com/' target='_blank' rel='noreferrer'>https://subnautica2guides.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://www.reneeroaming.com/new-england-fall-road-trip</p>
+<ul class='url-list'><li class='url-item'><a href='https://simbolos.beauty/' target='_blank' rel='noreferrer'>https://simbolos.beauty/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 5</span>
+</div>
+<p class='page-source'>https://blog.pianetamamma.it/amoredimamma/polpette-di-prosciutto-cotto-e-ricotta-al-forno/</p>
+<ul class='url-list'><li class='url-item'><a href='https://b52club.study/' target='_blank' rel='noreferrer'>https://b52club.study/</a></li><li class='url-item'><a href='https://bclub.uno/' target='_blank' rel='noreferrer'>https://bclub.uno/</a></li><li class='url-item'><a href='https://duawazifasolution.com/famous-muslim-astrologer-in-india/' target='_blank' rel='noreferrer'>https://duawazifasolution.com/famous-muslim-astrologer-in-india/</a></li><li class='url-item'><a href='https://hitclubb09.com/' target='_blank' rel='noreferrer'>https://hitclubb09.com/</a></li><li class='url-item'><a href='https://www.xn--vk1bl3bv6n42p.com/' target='_blank' rel='noreferrer'>https://www.xn--vk1bl3bv6n42p.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://www.onesweetmess.com/2017/06/08/cherry-negroni</p>
+<ul class='url-list'><li class='url-item'><a href='https://happimod.com/' target='_blank' rel='noreferrer'>https://happimod.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 2</span>
+</div>
+<p class='page-source'>https://www.craftberrybush.com/2025/01/heart-shaped-flower-arrangement-for-valentines-day.html</p>
+<ul class='url-list'><li class='url-item'><a href='https://happimod.com/' target='_blank' rel='noreferrer'>https://happimod.com/</a></li><li class='url-item'><a href='https://loraai.io/' target='_blank' rel='noreferrer'>https://loraai.io/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://www.peoplespunditdaily.com/news/us/2020/03/27/trump-pulls-trigger-on-defense-production-act-to-require-gm-to-make-ventilators/</p>
+<ul class='url-list'><li class='url-item'><a href='https://dance2ai.com/' target='_blank' rel='noreferrer'>https://dance2ai.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 2</span>
+</div>
+<p class='page-source'>https://cinescopia.com/las-10-mejores-peliculas-de-casey-affleck/2024/08/</p>
+<ul class='url-list'><li class='url-item'><a href='https://subnautica2guides.com/' target='_blank' rel='noreferrer'>https://subnautica2guides.com/</a></li><li class='url-item'><a href='https://zhiweichem.com/' target='_blank' rel='noreferrer'>https://zhiweichem.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://notsowimpyteacher.com/2024/01/5-reasons-why-teaching-grammar-is-still-important.html</p>
+<ul class='url-list'><li class='url-item'><a href='https://survivezombiearena.org/' target='_blank' rel='noreferrer'>https://survivezombiearena.org/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://www.bakerella.com/yummy-mummy-snack-cakes/</p>
+<ul class='url-list'><li class='url-item'><a href='https://subnautica2guides.com/' target='_blank' rel='noreferrer'>https://subnautica2guides.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 2</span>
+</div>
+<p class='page-source'>https://www.reneeroaming.com/mexico-city-itinerary-the-best-things-to-do-in-4-days</p>
+<ul class='url-list'><li class='url-item'><a href='https://ainsnilam.com/' target='_blank' rel='noreferrer'>https://ainsnilam.com/</a></li><li class='url-item'><a href='https://happyhorsefree.com/' target='_blank' rel='noreferrer'>https://happyhorsefree.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://www.demilked.com/just-a-girl/</p>
+<ul class='url-list'><li class='url-item'><a href='https://cartovoxel.com/' target='_blank' rel='noreferrer'>https://cartovoxel.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://www.certifiedpastryaficionado.com/nutella-cream-pie/</p>
+<ul class='url-list'><li class='url-item'><a href='https://happyhorsefree.com/' target='_blank' rel='noreferrer'>https://happyhorsefree.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://brownbagteacher.com/what-im-reading/</p>
+<ul class='url-list'><li class='url-item'><a href='https://happimod.com/' target='_blank' rel='noreferrer'>https://happimod.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 3</span>
+</div>
+<p class='page-source'>https://jilliancyork.com/2010/02/20/on-memorability/</p>
+<ul class='url-list'><li class='url-item'><a href='https://dialedgg.app/' target='_blank' rel='noreferrer'>https://dialedgg.app/</a></li><li class='url-item'><a href='https://dialedgg.app/)' target='_blank' rel='noreferrer'>https://dialedgg.app/)</a></li><li class='url-item'><a href='https://subnautica2guides.com/' target='_blank' rel='noreferrer'>https://subnautica2guides.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 2</span>
+</div>
+<p class='page-source'>https://stylelovely.com/diybalamoda/2016/01/diy-recicla-un-jersey</p>
+<ul class='url-list'><li class='url-item'><a href='https://myink.ai/' target='_blank' rel='noreferrer'>https://myink.ai/</a></li><li class='url-item'><a href='https://subnautica2guides.com/' target='_blank' rel='noreferrer'>https://subnautica2guides.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 2</span>
+</div>
+<p class='page-source'>https://thenerdswife.com/happy-sisters-day-with-frozen-and-disney.html</p>
+<ul class='url-list'><li class='url-item'><a href='https://happimod.com/' target='_blank' rel='noreferrer'>https://happimod.com/</a></li><li class='url-item'><a href='https://subnautica2guides.com/' target='_blank' rel='noreferrer'>https://subnautica2guides.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 3</span>
+</div>
+<p class='page-source'>https://blogs.ubc.ca/etec540socialmedia2013/sample-page/introduction-to-google/</p>
+<ul class='url-list'><li class='url-item'><a href='http://i-revenue.net/' target='_blank' rel='noreferrer'>http://i-revenue.net/</a></li><li class='url-item'><a href='https://iptvexclusif.com/abonnement-iptv-04/' target='_blank' rel='noreferrer'>https://iptvexclusif.com/abonnement-iptv-04/</a></li><li class='url-item'><a href='https://www.ahanarajput.com/' target='_blank' rel='noreferrer'>https://www.ahanarajput.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 2</span>
+</div>
+<p class='page-source'>https://chayagrossberg.com/how-do-you-know-if-youre-receiving-informed-consent/</p>
+<ul class='url-list'><li class='url-item'><a href='https://omnivideo.run/' target='_blank' rel='noreferrer'>https://omnivideo.run/</a></li><li class='url-item'><a href='https://subnautica2guides.com/' target='_blank' rel='noreferrer'>https://subnautica2guides.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://www.mae.gov.bi/en/an-audience-with-the-iom-head-of-the-mission-in-burundi/</p>
+<ul class='url-list'><li class='url-item'><a href='https://subnautica2guides.com/' target='_blank' rel='noreferrer'>https://subnautica2guides.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 12</span>
+</div>
+<p class='page-source'>https://threewood.jp/hpgen/HPB/entries/25.html</p>
+<ul class='url-list'><li class='url-item'><a href='http://agvolcom45588.namjai.cc/' target='_blank' rel='noreferrer'>http://agvolcom45588.namjai.cc/</a></li><li class='url-item'><a href='http://chromehearts817m.toyamaru.com/' target='_blank' rel='noreferrer'>http://chromehearts817m.toyamaru.com/</a></li><li class='url-item'><a href='https://fendi404ll.boo-log.com/' target='_blank' rel='noreferrer'>https://fendi404ll.boo-log.com/</a></li><li class='url-item'><a href='https://kidying.com/miumiu/num-232463.html' target='_blank' rel='noreferrer'>https://kidying.com/miumiu/num-232463.html</a></li><li class='url-item'><a href='https://kidyingcom35075.boo-log.com/' target='_blank' rel='noreferrer'>https://kidyingcom35075.boo-log.com/</a></li><li class='url-item'><a href='https://kidyingcom6799.naganoblog.jp/' target='_blank' rel='noreferrer'>https://kidyingcom6799.naganoblog.jp/</a></li><li class='url-item'><a href='https://kidyinglocationc.exblog.jp/' target='_blank' rel='noreferrer'>https://kidyinglocationc.exblog.jp/</a></li><li class='url-item'><a href='https://kidyingnationali.exblog.jp/' target='_blank' rel='noreferrer'>https://kidyingnationali.exblog.jp/</a></li><li class='url-item'><a href='https://loewe962o.boo-log.com/' target='_blank' rel='noreferrer'>https://loewe962o.boo-log.com/</a></li><li class='url-item'><a href='https://novema.jp/book/n1779480' target='_blank' rel='noreferrer'>https://novema.jp/book/n1779480</a></li><li class='url-item'><a href='https://vogcopy.net/goods-123682.html' target='_blank' rel='noreferrer'>https://vogcopy.net/goods-123682.html</a></li><li class='url-item'><a href='https://vogcopyextendedy.exblog.jp/' target='_blank' rel='noreferrer'>https://vogcopyextendedy.exblog.jp/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 2</span>
+</div>
+<p class='page-source'>https://blogs.deusto.es/innovandis/exprime-las-naranjas/</p>
+<ul class='url-list'><li class='url-item'><a href='https://happyhorsefree.com/' target='_blank' rel='noreferrer'>https://happyhorsefree.com/</a></li><li class='url-item'><a href='https://weeklyadfinder.com/foodmaxx/' target='_blank' rel='noreferrer'>https://weeklyadfinder.com/foodmaxx/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 2</span>
+</div>
+<p class='page-source'>https://www.runningwithspoons.com/flourless-carrot-cake-muffins/</p>
+<ul class='url-list'><li class='url-item'><a href='https://massarservicema.org/' target='_blank' rel='noreferrer'>https://massarservicema.org/</a></li><li class='url-item'><a href='https://psaonlineappointmentph.com/' target='_blank' rel='noreferrer'>https://psaonlineappointmentph.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://fashionablefoods.com/2014/10/20/roasted-butternut-squash-and-apple-soup/</p>
+<ul class='url-list'><li class='url-item'><a href='https://happyhorsefree.com/' target='_blank' rel='noreferrer'>https://happyhorsefree.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 5</span>
+</div>
+<p class='page-source'>https://blog.organicfood.vn/thoi-gian-ngam-cac-loai-hat-la-bao-lau-tai-sao-phai-ngam-hat/</p>
+<ul class='url-list'><li class='url-item'><a href='http://arrow-escape.com/' target='_blank' rel='noreferrer'>http://arrow-escape.com/</a></li><li class='url-item'><a href='https://happyhorsefree.com/' target='_blank' rel='noreferrer'>https://happyhorsefree.com/</a></li><li class='url-item'><a href='https://loraai.io/' target='_blank' rel='noreferrer'>https://loraai.io/</a></li><li class='url-item'><a href='https://omnivideo.xyz/\n' target='_blank' rel='noreferrer'>https://omnivideo.xyz/\n</a></li><li class='url-item'><a href='https://survivezombiearena.org/' target='_blank' rel='noreferrer'>https://survivezombiearena.org/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 4</span>
+</div>
+<p class='page-source'>https://poppyandgrace.com/2017/09/raleys-lilo-and-stitch-birthday-luau/</p>
+<ul class='url-list'><li class='url-item'><a href='https://cartovoxel.com/' target='_blank' rel='noreferrer'>https://cartovoxel.com/</a></li><li class='url-item'><a href='https://diamondexchh.com/' target='_blank' rel='noreferrer'>https://diamondexchh.com/</a></li><li class='url-item'><a href='https://mylaseronline.com/' target='_blank' rel='noreferrer'>https://mylaseronline.com/</a></li><li class='url-item'><a href='https://renovofficial.com/' target='_blank' rel='noreferrer'>https://renovofficial.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 18</span>
+</div>
+<p class='page-source'>https://blog.tallmenshoes.com/2018/10/5-ways-to-elevate-your-fashion.html</p>
+<ul class='url-list'><li class='url-item'><a href='https://draft.blogger.com/comment/delete/667474060057354970/1572718077445992855' target='_blank' rel='noreferrer'>https://draft.blogger.com/comment/delete/667474060057354970/1572718077445992855</a></li><li class='url-item'><a href='https://draft.blogger.com/comment/delete/667474060057354970/2000162162577957088' target='_blank' rel='noreferrer'>https://draft.blogger.com/comment/delete/667474060057354970/2000162162577957088</a></li><li class='url-item'><a href='https://draft.blogger.com/comment/delete/667474060057354970/2889195032126202383' target='_blank' rel='noreferrer'>https://draft.blogger.com/comment/delete/667474060057354970/2889195032126202383</a></li><li class='url-item'><a href='https://draft.blogger.com/comment/delete/667474060057354970/3985166281442804817' target='_blank' rel='noreferrer'>https://draft.blogger.com/comment/delete/667474060057354970/3985166281442804817</a></li><li class='url-item'><a href='https://draft.blogger.com/comment/delete/667474060057354970/4124517713872194317' target='_blank' rel='noreferrer'>https://draft.blogger.com/comment/delete/667474060057354970/4124517713872194317</a></li><li class='url-item'><a href='https://draft.blogger.com/comment/delete/667474060057354970/415553418924041585' target='_blank' rel='noreferrer'>https://draft.blogger.com/comment/delete/667474060057354970/415553418924041585</a></li><li class='url-item'><a href='https://draft.blogger.com/comment/delete/667474060057354970/4160844543524325203' target='_blank' rel='noreferrer'>https://draft.blogger.com/comment/delete/667474060057354970/4160844543524325203</a></li><li class='url-item'><a href='https://draft.blogger.com/comment/delete/667474060057354970/4518539177259951507' target='_blank' rel='noreferrer'>https://draft.blogger.com/comment/delete/667474060057354970/4518539177259951507</a></li><li class='url-item'><a href='https://draft.blogger.com/comment/delete/667474060057354970/452233479415885836' target='_blank' rel='noreferrer'>https://draft.blogger.com/comment/delete/667474060057354970/452233479415885836</a></li><li class='url-item'><a href='https://draft.blogger.com/comment/delete/667474060057354970/4976686781456303685' target='_blank' rel='noreferrer'>https://draft.blogger.com/comment/delete/667474060057354970/4976686781456303685</a></li><li class='url-item'><a href='https://draft.blogger.com/comment/delete/667474060057354970/4981564422194069707' target='_blank' rel='noreferrer'>https://draft.blogger.com/comment/delete/667474060057354970/4981564422194069707</a></li><li class='url-item'><a href='https://draft.blogger.com/comment/delete/667474060057354970/5788503907111852540' target='_blank' rel='noreferrer'>https://draft.blogger.com/comment/delete/667474060057354970/5788503907111852540</a></li><li class='url-item'><a href='https://draft.blogger.com/comment/delete/667474060057354970/5907542341226470596' target='_blank' rel='noreferrer'>https://draft.blogger.com/comment/delete/667474060057354970/5907542341226470596</a></li><li class='url-item'><a href='https://draft.blogger.com/comment/delete/667474060057354970/6857043236967765788' target='_blank' rel='noreferrer'>https://draft.blogger.com/comment/delete/667474060057354970/6857043236967765788</a></li><li class='url-item'><a href='https://draft.blogger.com/comment/delete/667474060057354970/8482909712220059561' target='_blank' rel='noreferrer'>https://draft.blogger.com/comment/delete/667474060057354970/8482909712220059561</a></li><li class='url-item'><a href='https://draft.blogger.com/profile/01398830526678662447' target='_blank' rel='noreferrer'>https://draft.blogger.com/profile/01398830526678662447</a></li><li class='url-item'><a href='https://draft.blogger.com/profile/03900507492683527365' target='_blank' rel='noreferrer'>https://draft.blogger.com/profile/03900507492683527365</a></li><li class='url-item'><a href='https://draft.blogger.com/profile/13949488587155139474' target='_blank' rel='noreferrer'>https://draft.blogger.com/profile/13949488587155139474</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://www.wonderfulmalaysia.com/food/best-wet-markets-kuala-lumpur.htm</p>
+<ul class='url-list'><li class='url-item'><a href='https://fwctimes.com/' target='_blank' rel='noreferrer'>https://fwctimes.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>http://blogs.evergreen.edu/morisa24/box-4/</p>
+<ul class='url-list'><li class='url-item'><a href='https://synaworld.it/' target='_blank' rel='noreferrer'>https://synaworld.it/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 2</span>
+</div>
+<p class='page-source'>https://www.mangoandsalt.com/2024/07/11/collection-de-chaussures-barefoot-avis-conseils-2/</p>
+<ul class='url-list'><li class='url-item'><a href='https://imageprompts.co/' target='_blank' rel='noreferrer'>https://imageprompts.co/</a></li><li class='url-item'><a href='https://subnautica2guides.com/' target='_blank' rel='noreferrer'>https://subnautica2guides.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 14</span>
+</div>
+<p class='page-source'>https://www.moonsoap.com/hpgen/HPB/entries/8.html</p>
+<ul class='url-list'><li class='url-item'><a href='http://celine132cc.chesuto.jp/' target='_blank' rel='noreferrer'>http://celine132cc.chesuto.jp/</a></li><li class='url-item'><a href='http://chromehearts239m.toyamaru.com/' target='_blank' rel='noreferrer'>http://chromehearts239m.toyamaru.com/</a></li><li class='url-item'><a href='http://loewe236j.namjai.cc/' target='_blank' rel='noreferrer'>http://loewe236j.namjai.cc/</a></li><li class='url-item'><a href='https://balenciaga147ee.boo-log.com/' target='_blank' rel='noreferrer'>https://balenciaga147ee.boo-log.com/</a></li><li class='url-item'><a href='https://fh6hub.com/' target='_blank' rel='noreferrer'>https://fh6hub.com/</a></li><li class='url-item'><a href='https://hermes366rf.boo-log.com/' target='_blank' rel='noreferrer'>https://hermes366rf.boo-log.com/</a></li><li class='url-item'><a href='https://kidying.com/copy-294/num-233374.html' target='_blank' rel='noreferrer'>https://kidying.com/copy-294/num-233374.html</a></li><li class='url-item'><a href='https://kidying.com/diesel/' target='_blank' rel='noreferrer'>https://kidying.com/diesel/</a></li><li class='url-item'><a href='https://kidying.com/diesel/num-232448.html' target='_blank' rel='noreferrer'>https://kidying.com/diesel/num-232448.html</a></li><li class='url-item'><a href='https://offwhite679jk.boo-log.com/' target='_blank' rel='noreferrer'>https://offwhite679jk.boo-log.com/</a></li><li class='url-item'><a href='https://vogcopy.net/goods-123285.html' target='_blank' rel='noreferrer'>https://vogcopy.net/goods-123285.html</a></li><li class='url-item'><a href='https://vogcopy.net/goods-124134.html' target='_blank' rel='noreferrer'>https://vogcopy.net/goods-124134.html</a></li><li class='url-item'><a href='https://vogcopynet80576.exblog.jp/' target='_blank' rel='noreferrer'>https://vogcopynet80576.exblog.jp/</a></li><li class='url-item'><a href='https://www.berrys-cafe.jp/book/n1768779' target='_blank' rel='noreferrer'>https://www.berrys-cafe.jp/book/n1768779</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://fashionablefoods.com/2014/12/28/creamy-ham-and-pea-pasta/</p>
+<ul class='url-list'><li class='url-item'><a href='https://dance2ai.com/' target='_blank' rel='noreferrer'>https://dance2ai.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://www.wonderfulmalaysia.com/tips/heading-to-malaysia-the-superstitions-you-ought-to-know.htm</p>
+<ul class='url-list'><li class='url-item'><a href='https://dialedgg.app/)' target='_blank' rel='noreferrer'>https://dialedgg.app/)</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://bevcooks.com/2024/08/homemade-ricotta/</p>
+<ul class='url-list'><li class='url-item'><a href='https://happyhorsefree.com/' target='_blank' rel='noreferrer'>https://happyhorsefree.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://bakersroyale.com/chocolate-banana-bread-muffins-stuffed-with-reeses-peanut-butter-cup/</p>
+<ul class='url-list'><li class='url-item'><a href='https://dance2ai.com/' target='_blank' rel='noreferrer'>https://dance2ai.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 2</span>
+</div>
+<p class='page-source'>https://www.runningwithspoons.com/easy-homemade-teriyaki-sauce/</p>
+<ul class='url-list'><li class='url-item'><a href='https://dance2ai.com/' target='_blank' rel='noreferrer'>https://dance2ai.com/</a></li><li class='url-item'><a href='https://howtopose.ai/' target='_blank' rel='noreferrer'>https://howtopose.ai/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 84</span>
+</div>
+<p class='page-source'>https://www.techqiah.com/2024/11/192-168-100-1.html</p>
+<ul class='url-list'><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/1044508110447684865' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/1044508110447684865</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/1166488177135763873' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/1166488177135763873</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/1168993498759889304' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/1168993498759889304</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/1303391083158251055' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/1303391083158251055</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/1434990616586486719' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/1434990616586486719</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/1527216959208275302' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/1527216959208275302</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/15406886612754852' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/15406886612754852</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/2189769853325910654' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/2189769853325910654</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/2368969519516575007' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/2368969519516575007</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/241190430730237909' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/241190430730237909</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/259517830414993873' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/259517830414993873</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/2601636474702153956' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/2601636474702153956</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/264775190557890322' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/264775190557890322</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/2701353854075677237' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/2701353854075677237</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/2783562600959513397' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/2783562600959513397</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/292631736081126224' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/292631736081126224</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/3064725738801548646' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/3064725738801548646</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/314410355189393902' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/314410355189393902</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/3313206257259338407' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/3313206257259338407</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/3364224956742632309' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/3364224956742632309</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/3731830068365438243' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/3731830068365438243</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/4180899334401009824' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/4180899334401009824</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/4185229253389917439' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/4185229253389917439</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/4215549075284039105' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/4215549075284039105</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/4326689428563796742' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/4326689428563796742</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/4516948340895927572' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/4516948340895927572</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/4683023717957697476' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/4683023717957697476</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/4692768564963176729' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/4692768564963176729</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/475752565885700633' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/475752565885700633</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/4779483462945463166' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/4779483462945463166</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/4780012445158303863' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/4780012445158303863</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/5012586942200366084' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/5012586942200366084</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/5124010595834851319' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/5124010595834851319</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/5173707827745173953' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/5173707827745173953</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/5276614539946491832' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/5276614539946491832</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/5277273217916076428' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/5277273217916076428</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/53858414790722735' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/53858414790722735</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/5484129696336567097' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/5484129696336567097</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/5499358775029116787' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/5499358775029116787</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/5847785842917482500' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/5847785842917482500</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/5919936223215804083' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/5919936223215804083</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/5948538334187872156' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/5948538334187872156</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/6153728837861829666' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/6153728837861829666</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/6244515335985790145' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/6244515335985790145</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/6445194585080000496' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/6445194585080000496</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/6449935244490596433' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/6449935244490596433</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/6491031335549407321' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/6491031335549407321</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/6741685339678500547' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/6741685339678500547</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/6946442482053713537' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/6946442482053713537</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/7015460739296122775' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/7015460739296122775</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/7276829623421178196' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/7276829623421178196</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/7449404147909420260' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/7449404147909420260</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/7502682409818266520' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/7502682409818266520</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/7523841847515167150' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/7523841847515167150</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/7555003936359744684' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/7555003936359744684</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/7728991826068037024' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/7728991826068037024</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/7738534848683391457' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/7738534848683391457</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/7801226283621916434' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/7801226283621916434</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/8040459582483561015' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/8040459582483561015</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/8077342270133381876' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/8077342270133381876</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/8077925213023039023' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/8077925213023039023</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/8200923656321691246' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/8200923656321691246</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/8393649883782214808' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/8393649883782214808</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/8671385736648112041' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/8671385736648112041</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/8686833232903106640' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/8686833232903106640</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/87189595728633045' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/87189595728633045</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/878347333186955496' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/878347333186955496</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/8795157909496320457' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/8795157909496320457</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/8840822368487278735' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/8840822368487278735</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/8859760631124619598' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/8859760631124619598</a></li><li class='url-item'><a href='https://www.blogger.com/comment/delete/524288899896912568/9118896816927316955' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/delete/524288899896912568/9118896816927316955</a></li><li class='url-item'><a href='https://www.blogger.com/comment/frame/524288899896912568?po=460869510905418231&amp;hl=en&amp;saa=85391&amp;origin=https://www.techqiah.com&amp;skin=soho' target='_blank' rel='noreferrer'>https://www.blogger.com/comment/frame/524288899896912568?po=460869510905418231&amp;hl=en&amp;saa=85391&amp;origin=https://www.techqiah.com&amp;skin=soho</a></li><li class='url-item'><a href='https://www.blogger.com/profile/00014259445992241976' target='_blank' rel='noreferrer'>https://www.blogger.com/profile/00014259445992241976</a></li><li class='url-item'><a href='https://www.blogger.com/profile/00349788795669218411' target='_blank' rel='noreferrer'>https://www.blogger.com/profile/00349788795669218411</a></li><li class='url-item'><a href='https://www.blogger.com/profile/00594232850138297330' target='_blank' rel='noreferrer'>https://www.blogger.com/profile/00594232850138297330</a></li><li class='url-item'><a href='https://www.blogger.com/profile/02245239733052001866' target='_blank' rel='noreferrer'>https://www.blogger.com/profile/02245239733052001866</a></li><li class='url-item'><a href='https://www.blogger.com/profile/05607617458651210154' target='_blank' rel='noreferrer'>https://www.blogger.com/profile/05607617458651210154</a></li><li class='url-item'><a href='https://www.blogger.com/profile/08564694027278100102' target='_blank' rel='noreferrer'>https://www.blogger.com/profile/08564694027278100102</a></li><li class='url-item'><a href='https://www.blogger.com/profile/13736700083071634633' target='_blank' rel='noreferrer'>https://www.blogger.com/profile/13736700083071634633</a></li><li class='url-item'><a href='https://www.blogger.com/profile/14102914324748387889' target='_blank' rel='noreferrer'>https://www.blogger.com/profile/14102914324748387889</a></li><li class='url-item'><a href='https://www.blogger.com/profile/14675339888836267947' target='_blank' rel='noreferrer'>https://www.blogger.com/profile/14675339888836267947</a></li><li class='url-item'><a href='https://www.blogger.com/profile/16375572278591223612' target='_blank' rel='noreferrer'>https://www.blogger.com/profile/16375572278591223612</a></li><li class='url-item'><a href='https://www.blogger.com/profile/16389274773030322647' target='_blank' rel='noreferrer'>https://www.blogger.com/profile/16389274773030322647</a></li><li class='url-item'><a href='https://www.blogger.com/profile/17138373295563873314' target='_blank' rel='noreferrer'>https://www.blogger.com/profile/17138373295563873314</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://www.mangoandsalt.com/2023/05/04/galgos-podencos-tout-savoir-adoption-levriers-despagne/</p>
+<ul class='url-list'><li class='url-item'><a href='https://dance2ai.com/' target='_blank' rel='noreferrer'>https://dance2ai.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://mummyfever.co.uk/family-skiing-in-bulgaria/</p>
+<ul class='url-list'><li class='url-item'><a href='https://dance2ai.com/' target='_blank' rel='noreferrer'>https://dance2ai.com/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://www.certifiedpastryaficionado.com/churro-waffles/</p>
+<ul class='url-list'><li class='url-item'><a href='https://howtopose.ai/' target='_blank' rel='noreferrer'>https://howtopose.ai/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 21</span>
+</div>
+<p class='page-source'>https://www.patisserie-okumoto.com/hpgen/HPB/entries/1.html?https%3A%2F%2Ffuhrerschein-eu.com%2F=</p>
+<ul class='url-list'><li class='url-item'><a href='http://bongdata.biz/' target='_blank' rel='noreferrer'>http://bongdata.biz/</a></li><li class='url-item'><a href='http://loewe895rr.toyamaru.com/' target='_blank' rel='noreferrer'>http://loewe895rr.toyamaru.com/</a></li><li class='url-item'><a href='http://poloralphlauren556pv.toyamaru.com/' target='_blank' rel='noreferrer'>http://poloralphlauren556pv.toyamaru.com/</a></li><li class='url-item'><a href='http://sites.google.com/entercodes.org/streameast/home' target='_blank' rel='noreferrer'>http://sites.google.com/entercodes.org/streameast/home</a></li><li class='url-item'><a href='https://88i.mobile/' target='_blank' rel='noreferrer'>https://88i.mobile/</a></li><li class='url-item'><a href='https://agvolperiodicu.exblog.jp/' target='_blank' rel='noreferrer'>https://agvolperiodicu.exblog.jp/</a></li><li class='url-item'><a href='https://betso88.beer/' target='_blank' rel='noreferrer'>https://betso88.beer/</a></li><li class='url-item'><a href='https://bongdata.app/' target='_blank' rel='noreferrer'>https://bongdata.app/</a></li><li class='url-item'><a href='https://chromehearts741n.boo-log.com/' target='_blank' rel='noreferrer'>https://chromehearts741n.boo-log.com/</a></li><li class='url-item'><a href='https://debetc.com/' target='_blank' rel='noreferrer'>https://debetc.com/</a></li><li class='url-item'><a href='https://ebolaoutbreak2026.net/' target='_blank' rel='noreferrer'>https://ebolaoutbreak2026.net/</a></li><li class='url-item'><a href='https://fh6hub.com/' target='_blank' rel='noreferrer'>https://fh6hub.com/</a></li><li class='url-item'><a href='https://five883.com/' target='_blank' rel='noreferrer'>https://five883.com/</a></li><li class='url-item'><a href='https://hitclub1.life/' target='_blank' rel='noreferrer'>https://hitclub1.life/</a></li><li class='url-item'><a href='https://loewe538mf.naganoblog.jp/' target='_blank' rel='noreferrer'>https://loewe538mf.naganoblog.jp/</a></li><li class='url-item'><a href='https://louisvuitton648o.yoka-yoka.jp/' target='_blank' rel='noreferrer'>https://louisvuitton648o.yoka-yoka.jp/</a></li><li class='url-item'><a href='https://offwhite420u.boo-log.com/' target='_blank' rel='noreferrer'>https://offwhite420u.boo-log.com/</a></li><li class='url-item'><a href='https://qs88.archi/' target='_blank' rel='noreferrer'>https://qs88.archi/</a></li><li class='url-item'><a href='https://qs88.cloud/' target='_blank' rel='noreferrer'>https://qs88.cloud/</a></li><li class='url-item'><a href='https://sc88.feedback/' target='_blank' rel='noreferrer'>https://sc88.feedback/</a></li><li class='url-item'><a href='https://thefreakcircus.org/' target='_blank' rel='noreferrer'>https://thefreakcircus.org/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 2</span>
+</div>
+<p class='page-source'>https://www.fivereasonssports.com/news/ultimate-miami-heat-fan-travel-guide-tickets-hotels-and-local-hotspots/</p>
+<ul class='url-list'><li class='url-item'><a href='https://happimod.com/' target='_blank' rel='noreferrer'>https://happimod.com/</a></li><li class='url-item'><a href='https://loraai.io/' target='_blank' rel='noreferrer'>https://loraai.io/</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 3</span>
+</div>
+<p class='page-source'>https://abracomex.org/aula-inaugural-graduacao-servicos-juridicos-online/</p>
+<ul class='url-list'><li class='url-item'><a href='https://dialedgg.app/)' target='_blank' rel='noreferrer'>https://dialedgg.app/)</a></li><li class='url-item'><a href='https://imageprompts.co/' target='_blank' rel='noreferrer'>https://imageprompts.co/</a></li><li class='url-item'><a href='https://teleprompteronline.net/)' target='_blank' rel='noreferrer'>https://teleprompteronline.net/)</a></li></ul>
+
+</article><article class='page prose'>
+<div class='page-meta'>
+<span class='badge badge-ok'>ok</span>
+<span class='badge'>new: 1</span>
+</div>
+<p class='page-source'>https://www.betterreading.com.au/news/book-life/wine-coffee-tea-what-do-you-drink-while-youre-reading/</p>
+<ul class='url-list'><li class='url-item'><a href='https://kid-voices-ai.com/' target='_blank' rel='noreferrer'>https://kid-voices-ai.com/</a></li></ul>
+
+</article>
+</section>
+    </section>
+  </main>
+</body>
+</html>

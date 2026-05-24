@@ -1,10 +1,12 @@
 #!/bin/bash
-# Sync html-url-crawl reports to public GitHub Pages
+# Sync html-url-crawl reports to the gh-pages branch of THIS repo (GitHub Pages source).
 set -euo pipefail
 shopt -s nullglob
 
-REPO_DIR="$HOME/Projects/html-url-crawl-reports"
-CRAWL_DIR="$HOME/Projects/html-url-crawl"
+CRAWL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PAGES_BRANCH="${PAGES_BRANCH:-gh-pages}"
+WORKTREE_DIR="${WORKTREE_DIR:-$CRAWL_DIR/.gh-pages}"
+GH_BIN="${GH_BIN:-gh}"
 
 push_with_retry() {
     local attempt=1
@@ -12,7 +14,7 @@ push_with_retry() {
     local delay=30
 
     while true; do
-        if git push "$PUSH_URL" main; then
+        if git push "$@"; then
             return 0
         fi
 
@@ -33,25 +35,41 @@ cd "$CRAWL_DIR" || exit 1
 # Rebuild report (in case new daily data exists)
 .venv/bin/python scripts/render_report.py
 
-# Copy to reports repo
-cp -f public/index.html "$REPO_DIR/"
-daily_pages=(public/daily/*.html)
-if [ "${#daily_pages[@]}" -gt 0 ]; then
-    cp -f "${daily_pages[@]}" "$REPO_DIR/daily/"
+# Ensure a worktree checked out on the gh-pages branch.
+if [ ! -d "$WORKTREE_DIR" ]; then
+    git fetch origin "$PAGES_BRANCH" || true
+    if git show-ref --verify --quiet "refs/remotes/origin/$PAGES_BRANCH"; then
+        git worktree add -B "$PAGES_BRANCH" "$WORKTREE_DIR" "origin/$PAGES_BRANCH"
+    else
+        git worktree add -B "$PAGES_BRANCH" "$WORKTREE_DIR"
+    fi
 fi
 
-# Commit and push (embed token in URL for cron/headless compatibility)
-cd "$REPO_DIR"
-GH_TOKEN=$(GH_CONFIG_DIR=~/.config/gh-file /Users/liike/.local/bin/gh auth token 2>/dev/null)
-if [ -z "$GH_TOKEN" ]; then
-    echo "[error] Failed to get GitHub token"
-    exit 1
+cd "$WORKTREE_DIR"
+git pull --ff-only origin "$PAGES_BRANCH" 2>/dev/null || true
+
+# Copy rendered output into the gh-pages worktree.
+cp -f "$CRAWL_DIR/public/index.html" ./
+mkdir -p daily
+daily_pages=("$CRAWL_DIR"/public/daily/*.html)
+if [ "${#daily_pages[@]}" -gt 0 ]; then
+    cp -f "${daily_pages[@]}" daily/
 fi
-PUSH_URL="https://Dear-linko:${GH_TOKEN}@github.com/Dear-linko/html-url-crawl-reports.git"
-git add daily/ index.html
-if ! git diff --cached --quiet; then
-    git commit -m "Auto-update: $(date +%Y-%m-%d)"
-else
+touch .nojekyll
+
+git add index.html daily/ .nojekyll
+if git diff --cached --quiet; then
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] no report changes to commit"
+    exit 0
 fi
-push_with_retry
+git commit -m "Auto-update: $(date +%Y-%m-%d)"
+
+# Prefer the remote's configured credentials; fall back to an embedded token
+# (via gh) for headless/cron environments without a credential helper.
+GH_TOKEN="$("$GH_BIN" auth token 2>/dev/null || true)"
+if [ -n "$GH_TOKEN" ]; then
+    PUSH_URL="https://x-access-token:${GH_TOKEN}@github.com/Dear-linko/html-url-crawl.git"
+    push_with_retry "$PUSH_URL" "HEAD:$PAGES_BRANCH"
+else
+    push_with_retry origin "HEAD:$PAGES_BRANCH"
+fi

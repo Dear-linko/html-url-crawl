@@ -21,6 +21,9 @@ data/
 logs/
 public/
 
+# gh-pages publishing worktree
+.gh-pages/
+
 # Tooling
 .coverage
 htmlcov/

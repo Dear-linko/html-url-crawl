@@ -34,7 +34,7 @@ cp .env.example .env
 `.env` 字段：
 - `TELEGRAM_BOT_TOKEN`
 - `TELEGRAM_CHAT_ID`
-- `REPORT_BASE_URL`（例如 `https://example.com/report`）
+- `REPORT_BASE_URL`（GitHub Pages 地址，例如 `https://dear-linko.github.io/html-url-crawl`）
 
 ## 常用命令
 
@@ -63,16 +63,21 @@ make test             # 运行测试
 示例：每小时第 5 分钟执行一次
 
 ```cron
-5 * * * * cd /Users/liike/Desktop/dev/python/html-url-crawl && /bin/bash scripts/run_and_notify.sh
+5 * * * * cd /path/to/html-url-crawl && /bin/bash scripts/run_and_notify.sh
 ```
 
-## Nginx 静态托管示例
+## 报表发布（GitHub Pages）
 
-将 `public/` 作为静态目录，例如：
+报表通过本仓库的 `gh-pages` 分支发布，无需独立的 reports 仓库。
 
-```nginx
-location /report/ {
-    alias /Users/liike/Desktop/dev/python/html-url-crawl/public/;
-    index index.html;
-}
-```
+`sync-reports.sh` 会：
+
+1. 运行 `render_report.py` 生成 `public/`；
+2. 在 `.gh-pages/`（git worktree）检出 `gh-pages` 分支；
+3. 复制 `index.html`、`daily/*.html`，提交并推送到 `gh-pages`。
+
+首次需在 GitHub 仓库的 **Settings → Pages** 中把发布源设为 `gh-pages` 分支根目录，
+站点地址即 `https://dear-linko.github.io/html-url-crawl`（同 `REPORT_BASE_URL`）。
+
+可选环境变量：`PAGES_BRANCH`、`WORKTREE_DIR`、`GH_BIN`（`gh` 可执行文件路径，用于
+headless/cron 下获取 token）。

@@ -395,6 +395,17 @@ def _render_day_page(day_data: dict[str, Any], day_file: Path, seen: set | None 
         for p in runs[-1].get("pages", []):
             latest_total += int(p.get("new_count", 0) or 0)
 
+    day_unique = _collect_day_unique_urls(day_data, seen=seen)
+    unique_items = "".join(
+        f"<li class='url-item'><a href='{html.escape(u)}' target='_blank' rel='noreferrer'>{html.escape(u)}</a></li>"
+        for u in day_unique
+    )
+    unique_html = (
+        f"<ul class='url-list'>{unique_items}</ul>"
+        if unique_items
+        else "<p class='prose-muted'>No new URLs.</p>"
+    )
+
     return f"""<!doctype html>
 <html>
 <head>
@@ -413,9 +424,14 @@ def _render_day_page(day_data: dict[str, Any], day_file: Path, seen: set | None 
 
     <section class='metrics'>
       <article class='metric'><p class='metric-label'>Runs</p><p class='metric-value'>{len(runs)}</p></article>
-      <article class='metric'><p class='metric-label'>Unique Added (Day)</p><p class='metric-value'>{len(_collect_day_unique_urls(day_data))}</p></article>
+      <article class='metric'><p class='metric-label'>Unique Added (Day)</p><p class='metric-value'>{len(day_unique)}</p></article>
       <article class='metric'><p class='metric-label'>Latest Added</p><p class='metric-value'>{latest_total}</p></article>
       <article class='metric'><p class='metric-label'>Date</p><p class='metric-value'>{html.escape(day)}</p></article>
+    </section>
+
+    <section class='card card-pad prose'>
+      <h2>Unique URLs · {len(day_unique)}</h2>
+      {unique_html}
     </section>
 
     <section class='card card-pad'>

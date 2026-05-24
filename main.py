@@ -5,9 +5,10 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urljoin
 
 from crawler.diff import build_baseline_index, compute_new_urls
-from crawler.extractor import extract_a_hrefs
+from crawler.extractor import extract_a_hrefs, extract_base_href
 from crawler.fetcher import fetch_html
 from crawler.normalize import filter_external_urls, normalize_and_dedupe
 from crawler.storage import append_daily_added, load_baseline, load_source_urls_from_config, save_baseline
@@ -19,7 +20,9 @@ def crawl_pages(source_urls: list[str]) -> list[dict[str, Any]]:
         try:
             final_url, html = fetch_html(source_url)
             hrefs = extract_a_hrefs(html)
-            normalized_urls = normalize_and_dedupe(final_url, hrefs)
+            base_href = extract_base_href(html)
+            link_base = urljoin(final_url, base_href) if base_href else final_url
+            normalized_urls = normalize_and_dedupe(link_base, hrefs)
             urls = filter_external_urls(final_url, normalized_urls)
             pages.append(
                 {

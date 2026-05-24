@@ -8,6 +8,10 @@ from pathlib import Path
 import requests
 
 ROOT = Path(__file__).resolve().parent.parent
+DAILY_DIR = ROOT / "data" / "daily"
+
+# Telegram sendMessage rejects payloads longer than 4096 characters.
+TELEGRAM_MAX_CHARS = 4096
 
 
 def load_env_file(path: Path) -> None:
@@ -23,9 +27,32 @@ def load_env_file(path: Path) -> None:
         os.environ.setdefault(key, value)
 
 
+def _today_str() -> str:
+    return datetime.now().astimezone().date().isoformat()
+
+
 def _today_daily_path() -> Path:
-    day = datetime.now().date().isoformat()
-    return ROOT / "data" / "daily" / f"{day}.json"
+    return DAILY_DIR / f"{_today_str()}.json"
+
+
+def _prior_days_seen(today_str: str) -> set[str]:
+    """URLs already reported on days before today (ISO date stems sort lexicographically)."""
+    seen: set[str] = set()
+    if not DAILY_DIR.exists():
+        return seen
+    for path in DAILY_DIR.glob("*.json"):
+        if path.stem >= today_str:
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        for run in data.get("runs", []):
+            for page in run.get("pages", []):
+                for url in page.get("new_urls", []):
+                    if isinstance(url, str):
+                        seen.add(url)
+    return seen
 
 
 def _latest_new_urls(daily_data: dict) -> list[str]:
@@ -41,7 +68,13 @@ def _latest_new_urls(daily_data: dict) -> list[str]:
     return sorted(urls)
 
 
-def build_message(daily_data: dict, report_base_url: str, max_items: int = 20) -> str | None:
+def build_message(
+    daily_data: dict,
+    report_base_url: str,
+    max_items: int = 20,
+    char_limit: int = TELEGRAM_MAX_CHARS,
+    prior_seen: set[str] | None = None,
+) -> str | None:
     runs = daily_data.get("runs", [])
     if not runs:
         return None
@@ -49,27 +82,38 @@ def build_message(daily_data: dict, report_base_url: str, max_items: int = 20) -
     latest = runs[-1]
     run_at = str(latest.get("run_at", ""))
     urls = _latest_new_urls(daily_data)
+    if prior_seen:
+        urls = [u for u in urls if u not in prior_seen]
     if not urls:
         return None
+
+    total = len(urls)
+    report_url = report_base_url.rstrip("/") + "/"
+    day = str(daily_data.get("date", ""))
 
     head = [
         "URL Crawler - New External URLs Detected",
         f"Run at: {run_at}",
-        f"Count: {len(urls)}",
+        f"Count: {total}",
         "",
     ]
-    body = [f"- {u}" for u in urls[:max_items]]
-    tail = []
-    if len(urls) > max_items:
-        tail.append(f"... and {len(urls) - max_items} more")
-
-    report_url = report_base_url.rstrip("/") + "/"
-    day = str(daily_data.get("date", ""))
-    tail.append(f"Report: {report_url}")
+    tail_links = [f"Report: {report_url}"]
     if day:
-        tail.append(f"Daily: {report_url}daily/{day}.html")
+        tail_links.append(f"Daily: {report_url}daily/{day}.html")
 
-    return "\n".join(head + body + [""] + tail)
+    def assemble(shown: list[str]) -> str:
+        omitted = total - len(shown)
+        body = [f"- {u}" for u in shown]
+        note = [f"... and {omitted} more"] if omitted else []
+        return "\n".join(head + body + note + [""] + tail_links)
+
+    shown = urls[:max_items]
+    message = assemble(shown)
+    # Trim further until the payload fits within Telegram's character limit.
+    while shown and len(message) > char_limit:
+        shown = shown[:-1]
+        message = assemble(shown)
+    return message
 
 
 def send_telegram_message(token: str, chat_id: str, text: str, timeout: int = 15) -> None:
@@ -89,7 +133,12 @@ def main() -> int:
     daily_data = json.loads(daily_path.read_text(encoding="utf-8"))
 
     report_base_url = os.getenv("REPORT_BASE_URL", "").strip()
-    message = build_message(daily_data, report_base_url or "http://localhost/")
+    prior_seen = _prior_days_seen(_today_str())
+    message = build_message(
+        daily_data,
+        report_base_url or "http://localhost/",
+        prior_seen=prior_seen,
+    )
     if not message:
         print("skip notify: no new urls in latest run")
         return 0

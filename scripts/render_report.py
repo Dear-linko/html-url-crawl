@@ -12,12 +12,6 @@ PUBLIC_DIR = ROOT / "public"
 PUBLIC_DAILY_DIR = PUBLIC_DIR / "daily"
 
 
-def _collect_daily_files() -> list[Path]:
-    if not DAILY_DIR.exists():
-        return []
-    return sorted(DAILY_DIR.glob("*.json"), reverse=True)
-
-
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 

@@ -5,6 +5,21 @@ import main
 from crawler.storage import load_baseline, save_baseline
 
 
+def test_crawl_pages_resolves_relative_links_against_base_href(monkeypatch) -> None:
+    html = """
+    <html><head><base href="https://cdn.other.example/app/"></head>
+    <body><a href="page.html">x</a><a href="https://third.example/y">y</a></body></html>
+    """
+    monkeypatch.setattr(main, "fetch_html", lambda url: ("https://site.example/", html))
+
+    page = main.crawl_pages(["https://site.example/"])[0]
+
+    assert page["status"] == "ok"
+    # "page.html" resolves against <base>, not the page URL
+    assert "https://cdn.other.example/app/page.html" in page["urls"]
+    assert "https://third.example/y" in page["urls"]
+
+
 def test_check_update_preserves_previous_urls_when_current_fetch_fails(tmp_path: Path, monkeypatch) -> None:
     config = tmp_path / "config.json"
     config.write_text(json.dumps({"source_urls": ["https://source.example/page"]}), encoding="utf-8")

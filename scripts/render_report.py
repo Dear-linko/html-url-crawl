@@ -22,13 +22,16 @@ def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _collect_day_unique_urls(day_data: dict[str, Any]) -> list[str]:
-    unique = set()
+def _collect_day_unique_urls(day_data: dict[str, Any], seen: set | None = None) -> list[str]:
+    """Collect unique new URLs for a day, optionally excluding URLs already seen on prior days."""
+    unique: set = set()
     for run in day_data.get("runs", []):
         for page in run.get("pages", []):
             for url in page.get("new_urls", []):
                 if isinstance(url, str):
                     unique.add(url)
+    if seen is not None:
+        unique -= seen
     return sorted(unique)
 
 
@@ -329,24 +332,34 @@ td { font-size: 0.9rem; }
 """
 
 
-def _render_day_page(day_data: dict[str, Any], day_file: Path) -> str:
+def _render_day_page(day_data: dict[str, Any], day_file: Path, seen: set | None = None) -> str:
+    """Render HTML for a single day. seen = URLs already shown on prior days (to deduplicate)."""
     day = str(day_data.get("date", day_file.stem))
     runs = day_data.get("runs", [])
     run_blocks: list[str] = []
 
     for idx, run in enumerate(reversed(runs), start=1):
         run_at = html.escape(str(run.get("run_at", "")))
-        pages = run.get("pages", [])
+        # Only show pages with new URLs
+        pages = [p for p in run.get("pages", []) if int(p.get("new_count", 0) or 0) > 0]
         page_blocks: list[str] = []
 
         for page in pages:
             source = html.escape(str(page.get("source_url", "")))
-            count = int(page.get("new_count", 0) or 0)
             status = str(page.get("status", "")).lower()
             status_badge = "badge-ok" if status == "ok" else "badge-err"
             status_text = html.escape(status or "unknown")
 
-            urls = page.get("new_urls", [])
+            raw_urls = page.get("new_urls", [])
+            # Filter out URLs already shown on prior days (cross-day dedup)
+            if seen is not None:
+                urls = [u for u in raw_urls if isinstance(u, str) and u not in seen]
+            else:
+                urls = [u for u in raw_urls if isinstance(u, str)]
+            count = len(urls)  # Show deduplicated count
+            if count == 0:
+                continue  # Skip pages where all URLs were already shown before
+
             url_items = "".join(
                 f"<li class='url-item'><a href='{html.escape(u)}' target='_blank' rel='noreferrer'>{html.escape(u)}</a></li>"
                 for u in urls
@@ -510,20 +523,43 @@ def build_report() -> tuple[Path, list[Path]]:
     PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
     PUBLIC_DAILY_DIR.mkdir(parents=True, exist_ok=True)
 
+    # Collect all day files sorted oldest-first for cross-day dedup
+    all_files = sorted(DAILY_DIR.glob("*.json"))  # ascending date order
+    all_day_data: list[tuple[Path, dict[str, Any]]] = []
+    for day_file in all_files:
+        all_day_data.append((day_file, _load_json(day_file)))
+
+    # Build global_seen: for each day, record which URLs were shown on PRIOR days
+    # We go oldest→newest, accumulate seen after each day's rendering
+    global_seen: set = set()
+    day_seen: dict[str, set] = {}  # day_str -> set of prior-seen URLs at that day
+    for day_file, day_data in all_day_data:
+        day_str = str(day_data.get("date", day_file.stem))
+        day_seen[day_str] = set(global_seen)  # snapshot before this day
+        # Add this day's unique URLs into global_seen for the next day
+        for url in _collect_day_unique_urls(day_data):
+            global_seen.add(url)
+
     daily_pages: list[Path] = []
     index_meta: list[dict[str, Any]] = []
 
-    for day_file in _collect_daily_files():
-        day_data = _load_json(day_file)
+    # Render in reverse-chronological order for index display, but use per-day seen sets
+    for day_file, day_data in reversed(all_day_data):
         day = str(day_data.get("date", day_file.stem))
         runs = day_data.get("runs", [])
         latest = runs[-1] if runs else {}
         latest_run_at = str(latest.get("run_at", ""))
+
+        seen_for_day = day_seen.get(day, set())
+        deduped_urls = _collect_day_unique_urls(day_data, seen=seen_for_day)
+        day_total_new = len(deduped_urls)
+
+        # Latest run new count (deduplicated)
         latest_new = 0
         for page in latest.get("pages", []):
-            latest_new += int(page.get("new_count", 0) or 0)
+            raw = page.get("new_urls", [])
+            latest_new += sum(1 for u in raw if isinstance(u, str) and u not in seen_for_day)
 
-        day_total_new = len(_collect_day_unique_urls(day_data))
         index_meta.append(
             {
                 "date": day,
@@ -533,7 +569,7 @@ def build_report() -> tuple[Path, list[Path]]:
             }
         )
 
-        daily_html = _render_day_page(day_data, day_file)
+        daily_html = _render_day_page(day_data, day_file, seen=seen_for_day)
         daily_out = PUBLIC_DAILY_DIR / f"{day}.html"
         daily_out.write_text(daily_html, encoding="utf-8")
         daily_pages.append(daily_out)

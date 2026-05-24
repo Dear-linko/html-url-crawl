@@ -53,6 +53,31 @@ def cmd_init(root: Path, config_file: Path) -> int:
     return 0
 
 
+def _pages_for_baseline_update(
+    baseline: dict[str, Any],
+    current_pages: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    previous_by_source = {
+        page.get("source_url"): page
+        for page in baseline.get("pages", [])
+        if isinstance(page, dict) and isinstance(page.get("source_url"), str)
+    }
+
+    pages: list[dict[str, Any]] = []
+    for page in current_pages:
+        source_url = page.get("source_url")
+        if page.get("status") == "ok" or not isinstance(source_url, str):
+            pages.append(page)
+            continue
+
+        previous = previous_by_source.get(source_url)
+        if isinstance(previous, dict) and previous.get("urls"):
+            pages.append(previous)
+        else:
+            pages.append(page)
+    return pages
+
+
 def cmd_check(root: Path, config_file: Path, update_baseline: bool) -> int:
     source_urls = load_source_urls_from_config(config_file)
     baseline = load_baseline(root)
@@ -77,7 +102,7 @@ def cmd_check(root: Path, config_file: Path, update_baseline: bool) -> int:
             print(f"error: {page['error']}")
 
     if update_baseline:
-        save_baseline(root, current_pages)
+        save_baseline(root, _pages_for_baseline_update(baseline, current_pages))
         print("baseline updated")
 
     return 0

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+import os
+import tempfile
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, TextIO
 
 
 def ensure_data_dirs(root: Path) -> None:
@@ -36,7 +38,7 @@ def save_baseline(root: Path, pages: list[dict[str, Any]]) -> Path:
         "pages": pages,
     }
     path = root / "data" / "baseline.json"
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    _write_json(path, payload)
     return path
 
 
@@ -61,5 +63,34 @@ def append_daily_added(root: Path, run_payload: dict[str, Any], now: datetime | 
         daily = {"date": date_str, "runs": []}
 
     daily.setdefault("runs", []).append(run_payload)
-    daily_path.write_text(json.dumps(daily, ensure_ascii=False, indent=2), encoding="utf-8")
+    _write_json(daily_path, daily)
     return daily_path
+
+
+def _write_json(path: Path, data: Any) -> None:
+    def write(f: TextIO) -> None:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+    _atomic_write(path, write)
+
+
+def _atomic_write(path: Path, write: Callable[[TextIO], None]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+        dir=str(path.parent),
+    )
+    tmp = Path(tmp_name)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            write(f)
+            f.flush()
+            os.fsync(f.fileno())
+        tmp.replace(path)
+    except Exception:
+        try:
+            tmp.unlink()
+        except FileNotFoundError:
+            pass
+        raise

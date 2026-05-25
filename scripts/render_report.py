@@ -1,16 +1,225 @@
 from __future__ import annotations
 
 import html
+import ipaddress
 import json
+import os
+import tempfile
 from datetime import date
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
+
+import requests
 
 ROOT = Path(__file__).resolve().parent.parent
 DAILY_DIR = ROOT / "data" / "daily"
 PUBLIC_DIR = ROOT / "public"
 PUBLIC_DAILY_DIR = PUBLIC_DIR / "daily"
+DOMAIN_REG_CACHE_PATH = ROOT / "data" / "domain_registration_cache.json"
+
+
+class _DomainRegistrationResolver:
+    """Resolve domain registration dates and persist cache to reduce remote lookups."""
+
+    def __init__(self, cache_path: Path, lookup_limit: int, timeout: float):
+        self.cache_path = cache_path
+        self.lookup_limit = max(0, lookup_limit)
+        self.timeout = max(0.5, timeout)
+        self.lookups = 0
+        self.dirty = False
+        self.cache = self._load_cache(cache_path)
+        self.cache.setdefault("version", 1)
+        self.cache.setdefault("domains", {})
+        self.cache.setdefault("hosts", {})
+
+    def resolve(self, url: str) -> tuple[str | None, str | None]:
+        host = _extract_hostname(url)
+        if not host:
+            return None, None
+        if _is_ip_address(host):
+            return host, None
+
+        domain = self._resolve_host_domain(host)
+        if not domain:
+            return host, None
+        return domain, self._resolve_domain_registration_date(domain)
+
+    def save(self) -> None:
+        if not self.dirty:
+            return
+        self.cache_path.parent.mkdir(parents=True, exist_ok=True)
+        fd, tmp_name = tempfile.mkstemp(
+            prefix=f".{self.cache_path.name}.",
+            suffix=".tmp",
+            dir=str(self.cache_path.parent),
+        )
+        tmp = Path(tmp_name)
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(self.cache, f, ensure_ascii=False, indent=2)
+                f.flush()
+                os.fsync(f.fileno())
+            tmp.replace(self.cache_path)
+        except Exception:
+            try:
+                tmp.unlink()
+            except FileNotFoundError:
+                pass
+            raise
+
+    def _load_cache(self, path: Path) -> dict[str, Any]:
+        if not path.exists():
+            return {}
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(payload, dict):
+                return payload
+        except Exception:
+            pass
+        return {}
+
+    def _resolve_host_domain(self, host: str) -> str | None:
+        hosts = self.cache["hosts"]
+        cached = hosts.get(host)
+        if isinstance(cached, str):
+            return cached or None
+
+        exhausted_budget = False
+        for candidate in _domain_candidates(host):
+            registration_date = self._resolve_domain_registration_date(candidate)
+            if registration_date:
+                hosts[host] = candidate
+                self.dirty = True
+                return candidate
+            # If candidate has a cached entry (even not found), try shorter suffix next.
+            if candidate in self.cache["domains"]:
+                continue
+            # No cache and query budget exhausted: stop to avoid repeated unresolved lookups.
+            if self.lookups >= self.lookup_limit:
+                exhausted_budget = True
+                break
+
+        if exhausted_budget:
+            return None
+        hosts[host] = ""
+        self.dirty = True
+        return None
+
+    def _resolve_domain_registration_date(self, domain: str) -> str | None:
+        domains = self.cache["domains"]
+        entry = domains.get(domain)
+        today = date.today().isoformat()
+        if isinstance(entry, dict):
+            registration_date = entry.get("registration_date")
+            if isinstance(registration_date, str) and registration_date:
+                return registration_date
+            status = str(entry.get("status", ""))
+            checked_on = str(entry.get("checked_on", ""))
+            if status in {"not_found", "error"} and checked_on == today:
+                return None
+
+        if self.lookups >= self.lookup_limit:
+            return None
+
+        registration_date, status = self._query_registration_date(domain)
+        domains[domain] = {
+            "registration_date": registration_date,
+            "status": status,
+            "checked_on": today,
+        }
+        self.dirty = True
+        return registration_date
+
+    def _query_registration_date(self, domain: str) -> tuple[str | None, str]:
+        self.lookups += 1
+        endpoint = f"https://rdap.org/domain/{quote(domain, safe='.-')}"
+        headers = {
+            "Accept": "application/rdap+json, application/json;q=0.9",
+            "User-Agent": "html-url-crawl/1.0",
+        }
+        try:
+            response = requests.get(endpoint, timeout=self.timeout, headers=headers)
+        except requests.RequestException:
+            return None, "error"
+
+        if response.status_code == 404:
+            return None, "not_found"
+        if response.status_code in {403, 429}:
+            return None, "error"
+        if response.status_code >= 400:
+            return None, "error"
+
+        try:
+            payload = response.json()
+        except ValueError:
+            return None, "error"
+
+        registration_date = _extract_registration_date(payload)
+        if registration_date:
+            return registration_date, "found"
+        return None, "not_found"
+
+
+def _extract_hostname(url: str) -> str | None:
+    try:
+        host = urlparse(url).hostname
+    except Exception:
+        return None
+    if not host:
+        return None
+    return host.rstrip(".").lower()
+
+
+def _is_ip_address(host: str) -> bool:
+    try:
+        ipaddress.ip_address(host)
+        return True
+    except ValueError:
+        return False
+
+
+def _domain_candidates(host: str) -> list[str]:
+    labels = [label for label in host.split(".") if label]
+    if len(labels) < 2:
+        return []
+    return [".".join(labels[i:]) for i in range(0, len(labels) - 1)]
+
+
+def _extract_registration_date(payload: dict[str, Any]) -> str | None:
+    events = payload.get("events", [])
+    if not isinstance(events, list):
+        return None
+
+    registration_dates: list[str] = []
+    for event in events:
+        if not isinstance(event, dict):
+            continue
+        action = str(event.get("eventAction", "")).lower()
+        if action not in {"registration", "reregistration"}:
+            continue
+        event_date = _normalize_event_date(event.get("eventDate"))
+        if event_date:
+            registration_dates.append(event_date)
+
+    if not registration_dates:
+        return None
+    return min(registration_dates)
+
+
+def _normalize_event_date(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    raw = value.strip()
+    if len(raw) < 10:
+        return None
+    date_part = raw[:10]
+    if len(date_part) != 10 or date_part[4] != "-" or date_part[7] != "-":
+        return None
+    year, month, day = date_part.split("-")
+    if not (year.isdigit() and month.isdigit() and day.isdigit()):
+        return None
+    return date_part
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -282,6 +491,15 @@ td { font-size: 0.9rem; }
   font-size: 0.84rem;
   line-height: 1.5;
 }
+.url-item-link {
+  display: inline-block;
+}
+.url-domain-meta {
+  margin-top: 0.24rem;
+  color: var(--tw-muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
 
 .error-box {
   margin-top: 0.55rem;
@@ -327,7 +545,40 @@ td { font-size: 0.9rem; }
 """
 
 
-def _render_day_page(day_data: dict[str, Any], day_file: Path, seen: set | None = None) -> str:
+def _render_url_item(url: str, resolver: _DomainRegistrationResolver | None) -> str:
+    safe_url = html.escape(url)
+    if resolver is None:
+        return (
+            "<li class='url-item'>"
+            f"<a class='url-item-link' href='{safe_url}' target='_blank' rel='noreferrer'>{safe_url}</a>"
+            "</li>"
+        )
+
+    domain, registration_date = resolver.resolve(url)
+    if domain:
+        safe_domain = html.escape(domain)
+    else:
+        safe_domain = "-"
+    reg_text = registration_date if registration_date else "-"
+    domain_meta = (
+        "<div class='url-domain-meta'>"
+        f"domain: {safe_domain} · registered: {html.escape(reg_text)}"
+        "</div>"
+    )
+    return (
+        "<li class='url-item'>"
+        f"<a class='url-item-link' href='{safe_url}' target='_blank' rel='noreferrer'>{safe_url}</a>"
+        f"{domain_meta}"
+        "</li>"
+    )
+
+
+def _render_day_page(
+    day_data: dict[str, Any],
+    day_file: Path,
+    seen: set | None = None,
+    resolver: _DomainRegistrationResolver | None = None,
+) -> str:
     """Render HTML for a single day. seen = URLs already shown on prior days (to deduplicate)."""
     day = str(day_data.get("date", day_file.stem))
     runs = day_data.get("runs", [])
@@ -355,10 +606,7 @@ def _render_day_page(day_data: dict[str, Any], day_file: Path, seen: set | None 
             if count == 0:
                 continue  # Skip pages where all URLs were already shown before
 
-            url_items = "".join(
-                f"<li class='url-item'><a href='{html.escape(u)}' target='_blank' rel='noreferrer'>{html.escape(u)}</a></li>"
-                for u in urls
-            )
+            url_items = "".join(_render_url_item(u, resolver) for u in urls)
             urls_html = f"<ul class='url-list'>{url_items}</ul>" if url_items else "<p class='prose-muted'>No new URLs.</p>"
 
             error = page.get("error")
@@ -397,10 +645,7 @@ def _render_day_page(day_data: dict[str, Any], day_file: Path, seen: set | None 
             latest_total += int(p.get("new_count", 0) or 0)
 
     day_unique = _collect_day_unique_urls(day_data, seen=seen)
-    unique_items = "".join(
-        f"<li class='url-item'><a href='{html.escape(u)}' target='_blank' rel='noreferrer'>{html.escape(u)}</a></li>"
-        for u in day_unique
-    )
+    unique_items = "".join(_render_url_item(u, resolver) for u in day_unique)
     unique_html = (
         f"<ul class='url-list'>{unique_items}</ul>"
         if unique_items
@@ -532,9 +777,36 @@ def _render_index(days: list[dict[str, Any]]) -> str:
 """
 
 
+def _env_int(name: str, default: int) -> int:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    try:
+        return int(value)
+    except ValueError:
+        return default
+
+
+def _env_float(name: str, default: float) -> float:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    try:
+        return float(value)
+    except ValueError:
+        return default
+
+
 def build_report() -> tuple[Path, list[Path]]:
     PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
     PUBLIC_DAILY_DIR.mkdir(parents=True, exist_ok=True)
+    lookup_limit = _env_int("DOMAIN_REG_LOOKUP_LIMIT", 200)
+    lookup_timeout = _env_float("DOMAIN_REG_LOOKUP_TIMEOUT", 4.0)
+    resolver = _DomainRegistrationResolver(
+        cache_path=DOMAIN_REG_CACHE_PATH,
+        lookup_limit=lookup_limit,
+        timeout=lookup_timeout,
+    )
 
     # Collect all day files sorted oldest-first for cross-day dedup
     all_files = sorted(DAILY_DIR.glob("*.json"))  # ascending date order
@@ -582,7 +854,7 @@ def build_report() -> tuple[Path, list[Path]]:
             }
         )
 
-        daily_html = _render_day_page(day_data, day_file, seen=seen_for_day)
+        daily_html = _render_day_page(day_data, day_file, seen=seen_for_day, resolver=resolver)
         daily_out = PUBLIC_DAILY_DIR / f"{day}.html"
         daily_out.write_text(daily_html, encoding="utf-8")
         daily_pages.append(daily_out)
@@ -590,6 +862,7 @@ def build_report() -> tuple[Path, list[Path]]:
     index_html = _render_index(index_meta)
     index_out = PUBLIC_DIR / "index.html"
     index_out.write_text(index_html, encoding="utf-8")
+    resolver.save()
     return index_out, daily_pages
 
 

@@ -81,7 +81,7 @@ make test             # 运行测试
 | `data/baseline.json`        | 基线（每个 source_url 的已知外链集合） |
 | `data/daily/YYYY-MM-DD.json`| 每日增量；同一天多次 `check` 追加到 `runs[]` |
 | `public/index.html`         | 报表总览（按日期汇总） |
-| `public/daily/YYYY-MM-DD.html` | 单日详情；**顶部含当日去重后的新增 URL 列表** |
+| `public/daily/YYYY-MM-DD.html` | 单日详情；**顶部含当日去重后的新增 URL 列表**，并在每条 URL 下展示域名与注册日期（若可查询） |
 
 > `data/` 与 `public/` 均被 `.gitignore` 忽略——它们是运行时产物，不进版本库。
 > 报表去重逻辑：单日详情会排除**前序日期**已出现过的 URL，使各天列表互不重复。
@@ -111,7 +111,9 @@ bash sync-reports.sh
 > （浏览器记得强制刷新）。
 
 可选环境变量：`PAGES_BRANCH`（默认 `gh-pages`）、`WORKTREE_DIR`（默认 `.gh-pages/`）、
-`GH_BIN`（`gh` 可执行文件路径，用于 headless/cron 下获取 push token）。
+`GH_BIN`（`gh` 可执行文件路径，用于 headless/cron 下获取 push token）、
+`DOMAIN_REG_LOOKUP_LIMIT`（每次渲染最多查询多少个新域名，默认 `200`）、
+`DOMAIN_REG_LOOKUP_TIMEOUT`（单次 RDAP 查询超时秒数，默认 `4`）。
 
 ## 定时运行（cron）
 

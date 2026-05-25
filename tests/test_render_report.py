@@ -9,6 +9,7 @@ def test_build_report_generates_index_and_daily(tmp_path: Path, monkeypatch):
     daily_dir = root / "data" / "daily"
     public_dir = root / "public"
     public_daily_dir = public_dir / "daily"
+    domain_cache_path = root / "data" / "domain_registration_cache.json"
     daily_dir.mkdir(parents=True)
 
     payload = {
@@ -36,6 +37,8 @@ def test_build_report_generates_index_and_daily(tmp_path: Path, monkeypatch):
     monkeypatch.setattr(render_report, "DAILY_DIR", daily_dir)
     monkeypatch.setattr(render_report, "PUBLIC_DIR", public_dir)
     monkeypatch.setattr(render_report, "PUBLIC_DAILY_DIR", public_daily_dir)
+    monkeypatch.setattr(render_report, "DOMAIN_REG_CACHE_PATH", domain_cache_path)
+    monkeypatch.setenv("DOMAIN_REG_LOOKUP_LIMIT", "0")
 
     index, daily_pages = render_report.build_report()
 
@@ -81,6 +84,7 @@ def test_daily_unique_section_dedupes_against_prior_days(tmp_path: Path, monkeyp
     daily_dir = root / "data" / "daily"
     public_dir = root / "public"
     public_daily_dir = public_dir / "daily"
+    domain_cache_path = root / "data" / "domain_registration_cache.json"
     daily_dir.mkdir(parents=True)
 
     (daily_dir / "2026-02-17.json").write_text(
@@ -94,6 +98,8 @@ def test_daily_unique_section_dedupes_against_prior_days(tmp_path: Path, monkeyp
     monkeypatch.setattr(render_report, "DAILY_DIR", daily_dir)
     monkeypatch.setattr(render_report, "PUBLIC_DIR", public_dir)
     monkeypatch.setattr(render_report, "PUBLIC_DAILY_DIR", public_daily_dir)
+    monkeypatch.setattr(render_report, "DOMAIN_REG_CACHE_PATH", domain_cache_path)
+    monkeypatch.setenv("DOMAIN_REG_LOOKUP_LIMIT", "0")
 
     render_report.build_report()
 
@@ -102,3 +108,39 @@ def test_daily_unique_section_dedupes_against_prior_days(tmp_path: Path, monkeyp
     assert "<h2>Unique URLs · 1</h2>" in day18
     assert "https://x.com/2" in day18
     assert "https://x.com/1" not in day18
+
+
+def test_daily_page_renders_domain_registration_from_cache(tmp_path: Path, monkeypatch):
+    root = tmp_path
+    daily_dir = root / "data" / "daily"
+    public_dir = root / "public"
+    public_daily_dir = public_dir / "daily"
+    domain_cache_path = root / "data" / "domain_registration_cache.json"
+    daily_dir.mkdir(parents=True)
+
+    payload = _day_payload("2026-02-17", ["https://blog.example.com/post-1"])
+    (daily_dir / "2026-02-17.json").write_text(json.dumps(payload), encoding="utf-8")
+    domain_cache_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "domains": {
+                    "example.com": {"registration_date": "2018-01-20", "status": "found"},
+                },
+                "hosts": {"blog.example.com": "example.com"},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(render_report, "ROOT", root)
+    monkeypatch.setattr(render_report, "DAILY_DIR", daily_dir)
+    monkeypatch.setattr(render_report, "PUBLIC_DIR", public_dir)
+    monkeypatch.setattr(render_report, "PUBLIC_DAILY_DIR", public_daily_dir)
+    monkeypatch.setattr(render_report, "DOMAIN_REG_CACHE_PATH", domain_cache_path)
+    monkeypatch.setenv("DOMAIN_REG_LOOKUP_LIMIT", "0")
+
+    render_report.build_report()
+
+    day_html = (public_daily_dir / "2026-02-17.html").read_text(encoding="utf-8")
+    assert "domain: example.com · registered: 2018-01-20" in day_html

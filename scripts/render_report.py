@@ -5,6 +5,7 @@ import json
 from datetime import date
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parent.parent
 DAILY_DIR = ROOT / "data" / "daily"
@@ -452,6 +453,8 @@ def _render_index(days: list[dict[str, Any]]) -> str:
     for day in days:
         day_str = str(day["date"])
         latest_run_at = str(day.get("latest_run_at", ""))
+        cache_bust = quote(latest_run_at) if latest_run_at else day_str
+        day_href = f"daily/{day_str}.html?v={cache_bust}"
         day_total_new = int(day.get("day_total_new", 0))
         latest_new = int(day.get("latest_new", 0))
         total_day_added += day_total_new
@@ -459,7 +462,7 @@ def _render_index(days: list[dict[str, Any]]) -> str:
 
         rows.append(
             f"<tr>"
-            f"<td><a href='daily/{html.escape(day_str)}.html'>{html.escape(day_str)}</a></td>"
+            f"<td><a href='{html.escape(day_href)}'>{html.escape(day_str)}</a></td>"
             f"<td>{html.escape(latest_run_at or '-')}</td>"
             f"<td><span class='badge badge-ok'>{day_total_new}</span></td>"
             f"<td><span class='badge'>{latest_new}</span></td>"
@@ -468,7 +471,7 @@ def _render_index(days: list[dict[str, Any]]) -> str:
         mobile_items.append(
             "<article class='mobile-item'>"
             "<div class='mobile-item-top'>"
-            f"<div><p class='mobile-date'><a href='daily/{html.escape(day_str)}.html'>{html.escape(day_str)}</a></p>"
+            f"<div><p class='mobile-date'><a href='{html.escape(day_href)}'>{html.escape(day_str)}</a></p>"
             f"<p class='mobile-time'>{html.escape(latest_run_at or '-')}</p></div>"
             f"<span class='badge'>{latest_new}</span>"
             "</div>"

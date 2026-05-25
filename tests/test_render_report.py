@@ -46,6 +46,7 @@ def test_build_report_generates_index_and_daily(tmp_path: Path, monkeypatch):
     index_html = index.read_text(encoding="utf-8")
     assert "2026-02-17" in index_html
     assert "Unique Added (Day)" in index_html
+    assert "daily/2026-02-17.html?v=2026-02-17T10%3A00%3A00%2B08%3A00" in index_html
 
     day_html = (public_daily_dir / "2026-02-17.html").read_text(encoding="utf-8")
     assert "<h2>Unique URLs · 2</h2>" in day_html

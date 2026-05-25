@@ -5,6 +5,7 @@ import ipaddress
 import json
 import os
 import tempfile
+import time
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -22,10 +23,12 @@ DOMAIN_REG_CACHE_PATH = ROOT / "data" / "domain_registration_cache.json"
 class _DomainRegistrationResolver:
     """Resolve domain registration dates and persist cache to reduce remote lookups."""
 
-    def __init__(self, cache_path: Path, lookup_limit: int, timeout: float):
+    def __init__(self, cache_path: Path, lookup_limit: int, timeout: float, retries: int, backoff: float):
         self.cache_path = cache_path
         self.lookup_limit = max(0, lookup_limit)
         self.timeout = max(0.5, timeout)
+        self.retries = max(0, retries)
+        self.backoff = max(0.0, backoff)
         self.lookups = 0
         self.dirty = False
         self.cache = self._load_cache(cache_path)
@@ -83,15 +86,33 @@ class _DomainRegistrationResolver:
         hosts = self.cache["hosts"]
         cached = hosts.get(host)
         if isinstance(cached, str):
-            return cached or None
+            # Backward-compatible cache format (string): only trust positive mapping.
+            if cached:
+                return cached
+        elif isinstance(cached, dict):
+            cached_domain = cached.get("domain")
+            if isinstance(cached_domain, str) and cached_domain:
+                return cached_domain
+            status = str(cached.get("status", ""))
+            checked_on = str(cached.get("checked_on", ""))
+            if checked_on == date.today().isoformat() and status in {"error", "not_found", "unknown"}:
+                return None
 
         exhausted_budget = False
+        candidate_statuses: list[str] = []
         for candidate in _domain_candidates(host):
             registration_date = self._resolve_domain_registration_date(candidate)
             if registration_date:
-                hosts[host] = candidate
+                hosts[host] = {
+                    "domain": candidate,
+                    "status": "found",
+                    "checked_on": date.today().isoformat(),
+                }
                 self.dirty = True
                 return candidate
+            entry = self.cache["domains"].get(candidate)
+            if isinstance(entry, dict):
+                candidate_statuses.append(str(entry.get("status", "")))
             # If candidate has a cached entry (even not found), try shorter suffix next.
             if candidate in self.cache["domains"]:
                 continue
@@ -102,7 +123,17 @@ class _DomainRegistrationResolver:
 
         if exhausted_budget:
             return None
-        hosts[host] = ""
+
+        status = "unknown"
+        if candidate_statuses and all(s == "not_found" for s in candidate_statuses):
+            status = "not_found"
+        elif any(s == "error" for s in candidate_statuses):
+            status = "error"
+        hosts[host] = {
+            "domain": "",
+            "status": status,
+            "checked_on": date.today().isoformat(),
+        }
         self.dirty = True
         return None
 
@@ -138,27 +169,62 @@ class _DomainRegistrationResolver:
             "Accept": "application/rdap+json, application/json;q=0.9",
             "User-Agent": "html-url-crawl/1.0",
         }
-        try:
-            response = requests.get(endpoint, timeout=self.timeout, headers=headers)
-        except requests.RequestException:
-            return None, "error"
+        for attempt in range(self.retries + 1):
+            try:
+                response = requests.get(endpoint, timeout=(2.5, self.timeout), headers=headers)
+            except requests.RequestException:
+                if attempt < self.retries:
+                    self._sleep_backoff(attempt)
+                    continue
+                return None, "error"
 
-        if response.status_code == 404:
+            if response.status_code == 404:
+                return None, "not_found"
+            if response.status_code == 429:
+                if attempt < self.retries:
+                    self._sleep_retry_after(response.headers.get("Retry-After"), attempt)
+                    continue
+                return None, "error"
+            if response.status_code in {408, 500, 502, 503, 504}:
+                if attempt < self.retries:
+                    self._sleep_backoff(attempt)
+                    continue
+                return None, "error"
+            if response.status_code in {401, 403}:
+                return None, "error"
+            if response.status_code >= 400:
+                return None, "error"
+
+            try:
+                payload = response.json()
+            except ValueError:
+                if attempt < self.retries:
+                    self._sleep_backoff(attempt)
+                    continue
+                return None, "error"
+
+            registration_date = _extract_registration_date(payload)
+            if registration_date:
+                return registration_date, "found"
             return None, "not_found"
-        if response.status_code in {403, 429}:
-            return None, "error"
-        if response.status_code >= 400:
-            return None, "error"
 
-        try:
-            payload = response.json()
-        except ValueError:
-            return None, "error"
+        return None, "error"
 
-        registration_date = _extract_registration_date(payload)
-        if registration_date:
-            return registration_date, "found"
-        return None, "not_found"
+    def _sleep_backoff(self, attempt: int) -> None:
+        delay = self.backoff * (2 ** attempt)
+        if delay > 0:
+            time.sleep(delay)
+
+    def _sleep_retry_after(self, value: str | None, attempt: int) -> None:
+        if isinstance(value, str):
+            try:
+                delay = float(value.strip())
+                if delay > 0:
+                    time.sleep(delay)
+                    return
+            except ValueError:
+                pass
+        self._sleep_backoff(attempt)
 
 
 def _extract_hostname(url: str) -> str | None:
@@ -802,10 +868,14 @@ def build_report() -> tuple[Path, list[Path]]:
     PUBLIC_DAILY_DIR.mkdir(parents=True, exist_ok=True)
     lookup_limit = _env_int("DOMAIN_REG_LOOKUP_LIMIT", 200)
     lookup_timeout = _env_float("DOMAIN_REG_LOOKUP_TIMEOUT", 4.0)
+    lookup_retries = _env_int("DOMAIN_REG_LOOKUP_RETRIES", 3)
+    lookup_backoff = _env_float("DOMAIN_REG_LOOKUP_BACKOFF", 0.8)
     resolver = _DomainRegistrationResolver(
         cache_path=DOMAIN_REG_CACHE_PATH,
         lookup_limit=lookup_limit,
         timeout=lookup_timeout,
+        retries=lookup_retries,
+        backoff=lookup_backoff,
     )
 
     # Collect all day files sorted oldest-first for cross-day dedup

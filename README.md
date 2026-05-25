@@ -55,6 +55,10 @@ cp .env.example .env
 | `TELEGRAM_BOT_TOKEN` | Telegram 机器人 token（留空则跳过通知） |
 | `TELEGRAM_CHAT_ID`   | 接收通知的 user / group / channel id |
 | `REPORT_BASE_URL`    | 报表公开地址，例如 `https://dear-linko.github.io/html-url-crawl` |
+| `DOMAIN_REG_LOOKUP_LIMIT` | 每次渲染最多查询的域名数（默认 `200`；定时任务可设 `400`） |
+| `DOMAIN_REG_LOOKUP_TIMEOUT` | 单次 RDAP 读超时秒数（默认 `4`；定时任务可设 `6`） |
+| `DOMAIN_REG_LOOKUP_RETRIES` | RDAP 失败重试次数（默认 `3`） |
+| `DOMAIN_REG_LOOKUP_BACKOFF` | 重试退避基数秒（默认 `0.8`） |
 
 > 二者均为本地文件，已在 `.gitignore` 中忽略，不会提交。
 
@@ -113,7 +117,9 @@ bash sync-reports.sh
 可选环境变量：`PAGES_BRANCH`（默认 `gh-pages`）、`WORKTREE_DIR`（默认 `.gh-pages/`）、
 `GH_BIN`（`gh` 可执行文件路径，用于 headless/cron 下获取 push token）、
 `DOMAIN_REG_LOOKUP_LIMIT`（每次渲染最多查询多少个新域名，默认 `200`）、
-`DOMAIN_REG_LOOKUP_TIMEOUT`（单次 RDAP 查询超时秒数，默认 `4`）。
+`DOMAIN_REG_LOOKUP_TIMEOUT`（单次 RDAP 读超时秒数，默认 `4`）、
+`DOMAIN_REG_LOOKUP_RETRIES`（RDAP 失败重试次数，默认 `3`）、
+`DOMAIN_REG_LOOKUP_BACKOFF`（重试退避秒数基数，默认 `0.8`）。
 
 ## 定时运行（cron）
 

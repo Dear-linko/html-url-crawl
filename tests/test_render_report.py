@@ -144,3 +144,60 @@ def test_daily_page_renders_domain_registration_from_cache(tmp_path: Path, monke
 
     day_html = (public_daily_dir / "2026-02-17.html").read_text(encoding="utf-8")
     assert "domain: example.com · registered: 2018-01-20" in day_html
+
+
+def test_resolver_recovers_from_legacy_empty_host_cache(tmp_path: Path):
+    cache_path = tmp_path / "domain_registration_cache.json"
+    cache_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "domains": {
+                    "example.com": {"registration_date": "2018-01-20", "status": "found"},
+                },
+                "hosts": {"blog.example.com": ""},
+            }
+        ),
+        encoding="utf-8",
+    )
+    resolver = render_report._DomainRegistrationResolver(
+        cache_path=cache_path, lookup_limit=10, timeout=1.0, retries=0, backoff=0.0
+    )
+    domain, reg_date = resolver.resolve("https://blog.example.com/post-1")
+    assert domain == "example.com"
+    assert reg_date == "2018-01-20"
+
+
+def test_resolver_retries_transient_rdap_failures(tmp_path: Path, monkeypatch):
+    calls = {"count": 0}
+
+    class _Response:
+        status_code = 200
+        headers = {}
+
+        @staticmethod
+        def json():
+            return {
+                "events": [
+                    {"eventAction": "registration", "eventDate": "2024-03-07T10:00:00Z"},
+                ]
+            }
+
+    def fake_get(*args, **kwargs):
+        calls["count"] += 1
+        if calls["count"] < 3:
+            raise render_report.requests.RequestException("temporary network issue")
+        return _Response()
+
+    monkeypatch.setattr(render_report.requests, "get", fake_get)
+    resolver = render_report._DomainRegistrationResolver(
+        cache_path=tmp_path / "domain_registration_cache.json",
+        lookup_limit=10,
+        timeout=1.0,
+        retries=3,
+        backoff=0.0,
+    )
+    registration_date, status = resolver._query_registration_date("example.com")
+    assert status == "found"
+    assert registration_date == "2024-03-07"
+    assert calls["count"] == 3
